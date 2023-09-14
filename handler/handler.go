@@ -7,6 +7,7 @@ import (
 	"io"
 
 	"github.com/jtarchie/sqlettus/db"
+	"github.com/jtarchie/sqlettus/router"
 	"github.com/jtarchie/sqlettus/tcp"
 )
 
@@ -24,7 +25,7 @@ var _ tcp.Handler = &Handler{}
 
 func (h *Handler) OnConnection(conn io.ReadWriter) error {
 	reader := bufio.NewReader(conn)
-	router := SetupRouter(h.client)
+	rootRouter := router.New(h.client)
 
 	for {
 		var tokens []string
@@ -51,10 +52,10 @@ func (h *Handler) OnConnection(conn io.ReadWriter) error {
 		tokensLength := len(tokens)
 
 		if tokensLength == 0 {
-			return ErrNoCommandFound
+			return router.ErrNoCommandFound
 		}
 
-		callback, err := router.Lookup(tokens)
+		callback, err := rootRouter.Lookup(tokens)
 		if err != nil {
 			return fmt.Errorf("could not execute router with tokens: %w", err)
 		}
@@ -78,7 +79,7 @@ func readString(reader *bufio.Reader) ([]byte, error) {
 	}
 
 	if len(line) != expectedLength {
-		return nil, fmt.Errorf("could not read string of expected length: %w", ErrIncorrectTokens)
+		return nil, fmt.Errorf("could not read string of expected length: %w", router.ErrIncorrectTokens)
 	}
 
 	return line, nil
