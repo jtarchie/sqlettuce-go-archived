@@ -1,0 +1,18 @@
+version: "2"
+sql:
+  - engine: "sqlite"
+    queries: "db/readers.sql"
+    schema: "db/migrations"
+    gen:
+      go:
+        package: "readers"
+        out: "db/readers"
+        emit_prepared_queries: true
+  - engine: "sqlite"
+    queries: "db/writers.sql"
+    schema: "db/migrations"
+    gen:
+      go:
+        package: "writers"
+        out: "db/writers"
+        emit_prepared_queries: true

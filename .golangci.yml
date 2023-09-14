@@ -1,0 +1,21 @@
+run:
+  skip-files: []
+linters:
+  enable-all: true
+  disable:
+  - depguard
+  - exhaustruct
+  - paralleltest
+  - gomnd
+
+  # linters deprecated
+  - deadcode
+  - exhaustivestruct
+  - golint
+  - ifshort
+  - interfacer
+  - nosnakecase
+  - maligned
+  - scopelint
+  - structcheck
+  - varcheck
