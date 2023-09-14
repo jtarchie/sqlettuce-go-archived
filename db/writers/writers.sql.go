@@ -9,6 +9,15 @@ import (
 	"context"
 )
 
+const flushAll = `-- name: FlushAll :exec
+DELETE FROM strings
+`
+
+func (q *Queries) FlushAll(ctx context.Context) error {
+	_, err := q.exec(ctx, q.flushAllStmt, flushAll)
+	return err
+}
+
 const set = `-- name: Set :exec
 INSERT INTO strings (name, value)
 VALUES (?1, ?2) ON CONFLICT(name) DO

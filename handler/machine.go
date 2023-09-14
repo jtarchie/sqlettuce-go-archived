@@ -3,7 +3,9 @@ package handler
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"strconv"
+	"strings"
 
 	"github.com/jtarchie/sqlettus/db"
 )
@@ -22,14 +24,25 @@ type Router interface {
 type Command map[string]Router
 
 func (c Command) Lookup(tokens []string) (Callback, error) {
-	next, ok := c[tokens[0]]
+	command := strings.ToUpper(tokens[0])
+
+	next, ok := c[command]
 	if !ok {
-		return nil, fmt.Errorf("could not find command %q: %w", tokens[0], ErrNoCommandFound)
+		slog.Debug("could not find command",
+			slog.String("command", command),
+		)
+
+		return staticResponseRouter(fmt.Sprintf("-Unsupported command %q\r\n", command)).Lookup(tokens)
 	}
 
 	callback, err := next.Lookup(tokens[1:])
 	if err != nil {
-		return nil, fmt.Errorf("could not execute command %q: %w", tokens[0], err)
+		slog.Debug("could not lookup command",
+			slog.String("command", command),
+			slog.String("error", err.Error()),
+		)
+
+		return staticResponseRouter("-Unprocessable command\r\n").Lookup(tokens)
 	}
 
 	return callback, nil
@@ -37,27 +50,30 @@ func (c Command) Lookup(tokens []string) (Callback, error) {
 
 var _ Router = Command{}
 
-type staticResponse string
-
-func (s staticResponse) Lookup(_ []string) (Callback, error) {
+func staticResponseCallback(response string) Callback {
 	return func(_ []string, w io.Writer) error {
-		_, err := io.WriteString(w, string(s))
+		_, err := io.WriteString(w, response)
 		if err != nil {
-			return fmt.Errorf("could not write static response %q: %w", s, err)
+			return fmt.Errorf("could not write static response %q: %w", response, err)
 		}
 
 		return nil
-	}, nil
+	}
 }
 
-var _ Router = staticResponse("")
+type staticResponseRouter string
+
+func (s staticResponseRouter) Lookup(_ []string) (Callback, error) {
+	return staticResponseCallback(string(s)), nil
+}
+
+var _ Router = staticResponseRouter("")
 
 type tokensLimits struct {
 	min, max int
 	callback Callback
 }
 
-// Lookup implements Router.
 func (t *tokensLimits) Lookup(tokens []string) (Callback, error) {
 	if 0 < t.min && len(tokens) < t.min {
 		return nil, fmt.Errorf("expected minimum number of tokens %d received %d: %w", t.min, len(tokens), ErrIncorrectTokens)
@@ -72,24 +88,51 @@ func (t *tokensLimits) Lookup(tokens []string) (Callback, error) {
 
 var _ Router = &tokensLimits{}
 
+type CallbackRouter Callback
+
+func (c CallbackRouter) Lookup(_ []string) (Callback, error) {
+	return Callback(c), nil
+}
+
+var _ Router = CallbackRouter(func(s []string, w io.Writer) error {
+	return nil
+})
+
+const OKResponse = "+OK\r\n"
+
+//nolint:funlen
 func SetupRouter(client *db.Client) Command {
 	return Command{
 		"COMMAND": Command{
-			"DOCS": staticResponse("+\r\n"),
+			"DOCS": staticResponseRouter("+\r\n"),
 		},
 		"CONFIG": Command{
 			"GET": Command{
-				"save":       staticResponse("+\r\n"),
-				"appendonly": staticResponse("+no\r\n"),
+				"save":       staticResponseRouter("+\r\n"),
+				"appendonly": staticResponseRouter("+no\r\n"),
 			},
 		},
+		"FLUSHALL": CallbackRouter(func(_ []string, conn io.Writer) error {
+			err := client.FlushAll()
+			if err != nil {
+				slog.Error("could not FLUSHALL", slog.String("error", err.Error()))
+			}
+
+			_, err = io.WriteString(conn, OKResponse)
+			if err != nil {
+				return fmt.Errorf("could not send reply: %w", err)
+			}
+
+			return nil
+		}),
+		"PING": staticResponseRouter("+PONG\r\n"),
 		"SET": minMaxTokens(2, 0, func(tokens []string, conn io.Writer) error {
-			err := client.Set(tokens[1], tokens[2])
+			err := client.Set(tokens[0], tokens[1])
 			if err != nil {
 				return fmt.Errorf("could not execute SET: %w", err)
 			}
 
-			_, err = io.WriteString(conn, "+OK\r\n")
+			_, err = io.WriteString(conn, OKResponse)
 			if err != nil {
 				return fmt.Errorf("could not send reply: %w", err)
 			}
@@ -97,7 +140,7 @@ func SetupRouter(client *db.Client) Command {
 			return nil
 		}),
 		"GET": minMaxTokens(1, 0, func(tokens []string, conn io.Writer) error {
-			value, err := client.Get(tokens[1])
+			value, err := client.Get(tokens[0])
 			if err != nil {
 				return fmt.Errorf("could not execute GET: %w", err)
 			}

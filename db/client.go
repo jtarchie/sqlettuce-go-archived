@@ -71,7 +71,7 @@ func NewClient(filename string) (*Client, error) {
 	}
 
 	err = migrator.Up()
-	if err != nil && errors.Is(err, migrate.ErrNoChange) {
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return nil, fmt.Errorf("could not migrate up: %w", err)
 	}
 
