@@ -26,6 +26,9 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         binaries-location: golangci-lint-1.54.2-linux-amd64
         tag: v1.54.2
+    - uses: sqlc-dev/setup-sqlc@v4
+      with:
+        sqlc-version: '1.21.0'
     - name: Install Task
       uses: arduino/setup-task@v1
       with:
