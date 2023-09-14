@@ -11,69 +11,88 @@ import (
 )
 
 type Server struct {
-	port uint64
+	listener net.Listener
+	poolSize int
+	port     int
 }
 
 func NewServer(
-	port uint64,
-) *Server {
-	return &Server{
-		port: port,
+	port int,
+	poolSize int,
+) (*Server, error) {
+	listener, err := reuseport.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
+	if err != nil {
+		return nil, fmt.Errorf("could not listen for tcp: %w", err)
 	}
+
+	return &Server{
+		port:     port,
+		poolSize: poolSize,
+		listener: listener,
+	}, nil
 }
 
 func (s *Server) Listen(handler Handler) error {
 	var totalConnections atomic.Uint64
 
-	workerPool := worker.New(100, 100, func(worker int, conn net.Conn) {
-		currentConnection := totalConnections.Add(1)
+	workerPool := worker.New(
+		s.poolSize,
+		s.poolSize,
+		func(worker int, conn net.Conn) {
+			currentConnection := totalConnections.Add(1)
 
-		slog.Info("accepted new connection",
-			slog.Int("worker", worker),
-			slog.Uint64("connection", currentConnection),
-		)
-
-		err := handler.OnConnection(conn)
-		if err != nil {
-			slog.Error("connection errored",
+			slog.Info("accepted new connection",
 				slog.Int("worker", worker),
 				slog.Uint64("connection", currentConnection),
-				slog.String("error", err.Error()),
 			)
-		}
 
-		err = conn.Close()
-		if err != nil {
-			slog.Error("connection closed",
+			err := handler.OnConnection(conn)
+			if err != nil {
+				slog.Error("connection errored",
+					slog.Int("worker", worker),
+					slog.Uint64("connection", currentConnection),
+					slog.String("error", err.Error()),
+				)
+			}
+
+			err = conn.Close()
+			if err != nil {
+				slog.Error("connection closed",
+					slog.Int("worker", worker),
+					slog.Uint64("connection", currentConnection),
+					slog.String("error", err.Error()),
+				)
+			}
+
+			slog.Info("connection closed",
 				slog.Int("worker", worker),
 				slog.Uint64("connection", currentConnection),
-				slog.String("error", err.Error()),
 			)
-		}
+		})
 
-		slog.Info("connection closed",
-			slog.Int("worker", worker),
-			slog.Uint64("connection", currentConnection),
-		)
-	})
-
-	listener, err := reuseport.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", s.port))
-	if err != nil {
-		return fmt.Errorf("could not listen for tcp: %w", err)
-	}
-
-	slog.Info("started server", slog.Uint64("port", s.port))
-
-	defer func() {
-		_ = listener.Close()
-	}()
+	slog.Info("started server", slog.Int("port", s.port))
 
 	for {
-		conn, err := listener.Accept()
+		conn, err := s.listener.Accept()
+
+		//nolint:errorlint
+		if opErr, ok := err.(*net.OpError); ok && !opErr.Temporary() {
+			return nil
+		}
+
 		if err != nil {
 			return fmt.Errorf("could not accept connection for tcp: %w", err)
 		}
 
 		workerPool.Enqueue(conn)
 	}
+}
+
+func (s *Server) Close() error {
+	err := s.listener.Close()
+	if err != nil {
+		return fmt.Errorf("could not close server: %w", err)
+	}
+
+	return nil
 }
