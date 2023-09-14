@@ -1,7 +1,7 @@
 # Sqlettus
 
 **Redis-like** service with SQLite as a backend. A playful fusion of SQLite and
-Redis to offer in-memory data structure store capabilities with the persistent
+Redis offers in-memory data structure store capabilities with the persistent
 storage of SQLite.
 
 ## Features
@@ -26,10 +26,6 @@ code.
 
 ## Installation
 
-As this is a Go-based project, you'd typically clone the repository and build it
-using `go build`. However, specific installation instructions will depend on any
-further setup you provide. For now:
-
 ```bash
 git clone https://github.com/jtarchie/sqlettus.git
 cd sqlettus
@@ -45,12 +41,9 @@ After building, you can run the executable:
 ./sqlettus
 ```
 
-For actual usage within applications, you'd likely use it similar to how you'd
-use Redis, but you'll need to provide more specifics or examples.
-
 ## Contributing
 
-Pull requests are welcome. For major changes, please open an issue first to
+Pull requests are welcome. For significant changes, please open an issue first to
 discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
