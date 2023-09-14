@@ -19,10 +19,13 @@ jobs:
       with:
         go-version: 'stable'
         cache: true
-    - name: golangci-lint
-      uses: golangci/golangci-lint-action@v3
-      with:
-        version: latest
+    - name: Install golangci-lint
+      uses: jaxxstorm/action-install-gh-release@v1.10.0
+      with: # Grab the latest version
+        repo: golangci/golangci-lint
+        token: ${{ secrets.GITHUB_TOKEN }}
+        binaries-location: golangci-lint-1.54.2-linux-amd64
+        tag: v1.54.2
     - name: Install Task
       uses: arduino/setup-task@v1
       with:
