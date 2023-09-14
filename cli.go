@@ -9,22 +9,22 @@ import (
 )
 
 type CLI struct {
-	Port     int    `default:"6379"    help:"port to listen on"`
+	Port     uint   `default:"6379"    help:"port to listen on"`
 	Filename string `default:"test.db" help:"filename to store database"`
-	Workers  int    `default:"100"     help:"number of workers to run"`
+	Workers  uint   `default:"100"     help:"number of workers to run"`
 }
 
 func (c *CLI) Run() error {
-	server, err := tcp.NewServer(c.Port, c.Workers)
-	if err != nil {
-		return fmt.Errorf("could not create server: %w", err)
-	}
-
-	client, err := db.NewClient("test.db")
+	client, err := db.NewClient(c.Filename)
 	if err != nil {
 		return fmt.Errorf("could not start db client: %w", err)
 	}
 	defer client.Close()
+
+	server, err := tcp.NewServer(c.Port, c.Workers)
+	if err != nil {
+		return fmt.Errorf("could not create server: %w", err)
+	}
 
 	err = server.Listen(handler.New(client))
 	if err != nil {

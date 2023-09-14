@@ -19,7 +19,7 @@ func startServer(handler tcp.Handler) (int, *tcp.Server) {
 	port, err := freeport.GetFreePort()
 	Expect(err).NotTo(HaveOccurred())
 
-	server, err := tcp.NewServer(port, 1)
+	server, err := tcp.NewServer(uint(port), 1)
 	Expect(err).NotTo(HaveOccurred())
 
 	go func() {

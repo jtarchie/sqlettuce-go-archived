@@ -12,15 +12,15 @@ import (
 
 type Server struct {
 	listener net.Listener
-	poolSize int
-	port     int
+	poolSize uint
+	port     uint
 }
 
 func NewServer(
-	port int,
-	poolSize int,
+	port uint,
+	poolSize uint,
 ) (*Server, error) {
-	listener, err := reuseport.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
+	listener, err := reuseport.Listen("tcp", fmt.Sprintf("localhost:%d", port))
 	if err != nil {
 		return nil, fmt.Errorf("could not listen for tcp: %w", err)
 	}
@@ -36,8 +36,8 @@ func (s *Server) Listen(handler Handler) error {
 	var totalConnections atomic.Uint64
 
 	workerPool := worker.New(
-		s.poolSize,
-		s.poolSize,
+		int(s.poolSize),
+		int(s.poolSize),
 		func(worker int, conn net.Conn) {
 			currentConnection := totalConnections.Add(1)
 
@@ -70,7 +70,10 @@ func (s *Server) Listen(handler Handler) error {
 			)
 		})
 
-	slog.Info("started server", slog.Int("port", s.port))
+	slog.Info("started server",
+		slog.Uint64("port", uint64(s.port)),
+		slog.Uint64("pool", uint64(s.poolSize)),
+	)
 
 	for {
 		conn, err := s.listener.Accept()
