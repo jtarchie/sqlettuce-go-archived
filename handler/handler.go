@@ -54,7 +54,7 @@ func (h *Handler) OnConnection(conn io.ReadWriter) error {
 			return ErrNoCommandFound
 		}
 
-		callback, err := router.Execute(tokens)
+		callback, err := router.Lookup(tokens)
 		if err != nil {
 			return fmt.Errorf("could not execute router with tokens: %w", err)
 		}

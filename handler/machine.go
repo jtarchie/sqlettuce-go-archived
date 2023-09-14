@@ -16,18 +16,18 @@ var (
 type Callback func([]string, io.Writer) error
 
 type Router interface {
-	Execute(tokens []string) (Callback, error)
+	Lookup(tokens []string) (Callback, error)
 }
 
 type Command map[string]Router
 
-func (c Command) Execute(tokens []string) (Callback, error) {
+func (c Command) Lookup(tokens []string) (Callback, error) {
 	next, ok := c[tokens[0]]
 	if !ok {
 		return nil, fmt.Errorf("could not find command %q: %w", tokens[0], ErrNoCommandFound)
 	}
 
-	callback, err := next.Execute(tokens[1:])
+	callback, err := next.Lookup(tokens[1:])
 	if err != nil {
 		return nil, fmt.Errorf("could not execute command %q: %w", tokens[0], err)
 	}
@@ -39,7 +39,7 @@ var _ Router = Command{}
 
 type staticResponse string
 
-func (s staticResponse) Execute(_ []string) (Callback, error) {
+func (s staticResponse) Lookup(_ []string) (Callback, error) {
 	return func(_ []string, w io.Writer) error {
 		_, err := io.WriteString(w, string(s))
 		if err != nil {
@@ -57,8 +57,8 @@ type tokensLimits struct {
 	callback Callback
 }
 
-// Execute implements Router.
-func (t *tokensLimits) Execute(tokens []string) (Callback, error) {
+// Lookup implements Router.
+func (t *tokensLimits) Lookup(tokens []string) (Callback, error) {
 	if 0 < t.min && len(tokens) < t.min {
 		return nil, fmt.Errorf("expected minimum number of tokens %d received %d: %w", t.min, len(tokens), ErrIncorrectTokens)
 	}
