@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"strconv"
 
 	"github.com/jtarchie/sqlettus/db"
 	"github.com/jtarchie/sqlettus/tcp"
@@ -23,14 +22,9 @@ func New(client *db.Client) *Handler {
 
 var _ tcp.Handler = &Handler{}
 
-var (
-	ErrNoCommandFound  = fmt.Errorf("could not determine command, none were sent")
-	ErrIncorrectTokens = fmt.Errorf("received incorrect tokens")
-)
-
-//nolint:funlen,gocognit,cyclop
 func (h *Handler) OnConnection(conn io.ReadWriter) error {
 	reader := bufio.NewReader(conn)
+	router := SetupRouter(h.client)
 
 	for {
 		var tokens []string
@@ -60,76 +54,14 @@ func (h *Handler) OnConnection(conn io.ReadWriter) error {
 			return ErrNoCommandFound
 		}
 
-		command := tokens[0]
-		switch command {
-		case "COMMAND":
-			_, err = io.WriteString(conn, "*0\r\n")
-			if err != nil {
-				return fmt.Errorf("could not send reply: %w", err)
-			}
+		callback, err := router.Execute(tokens)
+		if err != nil {
+			return fmt.Errorf("could not execute router with tokens: %w", err)
+		}
 
-		case "CONFIG":
-			switch tokens[1] {
-			case "GET":
-				switch tokens[2] {
-				case "save":
-					_, err = io.WriteString(conn, "+\r\n")
-					if err != nil {
-						return fmt.Errorf("could not send reply: %w", err)
-					}
-				case "appendonly":
-					_, err = io.WriteString(conn, "+no\r\n")
-					if err != nil {
-						return fmt.Errorf("could not send reply: %w", err)
-					}
-				default:
-					return fmt.Errorf("could not CONFIG GET %q: %w", tokens[2], ErrIncorrectTokens)
-				}
-			default:
-				return fmt.Errorf("could not CONFIG %q: %w", tokens[1], err)
-			}
-		case "GET":
-			if tokensLength < 2 {
-				return fmt.Errorf("GET requires key token: %w", err)
-			}
-
-			value, err := h.client.Get(tokens[1])
-			if err != nil {
-				return fmt.Errorf("could not execute GET: %w", err)
-			}
-
-			if value == nil {
-				_, err = io.WriteString(conn, "+\r\n")
-				if err != nil {
-					return fmt.Errorf("could not send reply: %w", err)
-				}
-			} else {
-				_, _ = conn.Write([]byte("$"))
-				_, _ = io.WriteString(conn, strconv.Itoa(len(*value)))
-				_, _ = io.WriteString(conn, "\r\n")
-				_, _ = io.WriteString(conn, *value)
-				_, err = io.WriteString(conn, "\r\n")
-				if err != nil {
-					return fmt.Errorf("could not send reply: %w", err)
-				}
-			}
-		case "SET":
-			if tokensLength < 3 {
-				return fmt.Errorf("SET requires key-value tokens: %w", err)
-			}
-
-			err := h.client.Set(tokens[1], tokens[2])
-			if err != nil {
-				return fmt.Errorf("could not execute SET: %w", err)
-			}
-
-			_, err = io.WriteString(conn, "+OK\r\n")
-			if err != nil {
-				return fmt.Errorf("could not send reply: %w", err)
-			}
-
-		default:
-			return fmt.Errorf("could not find command %q: %w", command, err)
+		err = callback(tokens, conn)
+		if err != nil {
+			return fmt.Errorf("could not process callback: %w", err)
 		}
 	}
 }
