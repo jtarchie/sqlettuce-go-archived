@@ -1,6 +1,7 @@
 package router
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log/slog"
@@ -10,7 +11,10 @@ import (
 )
 
 //nolint:funlen
-func New(client *db.Client) Command {
+func New(
+	ctx context.Context,
+	client *db.Client,
+) Command {
 	return Command{
 		"COMMAND": Command{
 			"DOCS": staticResponseRouter("+\r\n"),
@@ -44,7 +48,7 @@ func New(client *db.Client) Command {
 			return nil
 		}),
 		"SET": minMaxTokens(2, 0, func(tokens []string, conn io.Writer) error {
-			err := client.Set(tokens[0], tokens[1])
+			err := client.Set(ctx, tokens[0], tokens[1])
 			if err != nil {
 				return fmt.Errorf("could not execute SET: %w", err)
 			}
@@ -57,7 +61,7 @@ func New(client *db.Client) Command {
 			return nil
 		}),
 		"GET": minMaxTokens(1, 0, func(tokens []string, conn io.Writer) error {
-			value, err := client.Get(tokens[0])
+			value, err := client.Get(ctx, tokens[0])
 			if err != nil {
 				return fmt.Errorf("could not execute GET: %w", err)
 			}

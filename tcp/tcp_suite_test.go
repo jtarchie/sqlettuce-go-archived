@@ -1,6 +1,7 @@
 package tcp_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/jtarchie/sqlettus/tcp"
@@ -19,13 +20,13 @@ func startServer(handler tcp.Handler) (int, *tcp.Server) {
 	port, err := freeport.GetFreePort()
 	Expect(err).NotTo(HaveOccurred())
 
-	server, err := tcp.NewServer(uint(port), 1)
+	server, err := tcp.NewServer(context.TODO(), uint(port), 1)
 	Expect(err).NotTo(HaveOccurred())
 
 	go func() {
 		defer GinkgoRecover()
 
-		err := server.Listen(handler)
+		err := server.Listen(context.TODO(), handler)
 		Expect(err).NotTo(HaveOccurred())
 	}()
 
@@ -44,11 +45,11 @@ var _ = Describe("When starting a TCP Server", func() {
 
 	When("the handler errors on the client", func() {
 		It("server continues accepting connections", func() {
-			_, server := startServer(&handlers.Error{})
+			port, server := startServer(&handlers.Error{})
 			defer server.Close()
 
-			// _, err := tcp.Write(port, "echo\r\n")
-			// Expect(err).To(HaveOccurred())
+			_, err := tcp.Write(port, "echo\r\n")
+			Expect(err).To(HaveOccurred())
 		})
 	})
 })

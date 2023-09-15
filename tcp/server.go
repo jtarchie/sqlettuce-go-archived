@@ -1,12 +1,12 @@
 package tcp
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net"
 
 	"github.com/jtarchie/worker"
-	"github.com/libp2p/go-reuseport"
 	"go.uber.org/atomic"
 )
 
@@ -17,10 +17,13 @@ type Server struct {
 }
 
 func NewServer(
+	ctx context.Context,
 	port uint,
 	poolSize uint,
 ) (*Server, error) {
-	listener, err := reuseport.Listen("tcp", fmt.Sprintf("localhost:%d", port))
+	var lc net.ListenConfig
+
+	listener, err := lc.Listen(ctx, "tcp", fmt.Sprintf("localhost:%d", port))
 	if err != nil {
 		return nil, fmt.Errorf("could not listen for tcp: %w", err)
 	}
@@ -32,7 +35,7 @@ func NewServer(
 	}, nil
 }
 
-func (s *Server) Listen(handler Handler) error {
+func (s *Server) Listen(ctx context.Context, handler Handler) error {
 	var totalConnections atomic.Uint64
 
 	workerPool := worker.New(
@@ -46,7 +49,7 @@ func (s *Server) Listen(handler Handler) error {
 				slog.Uint64("connection", currentConnection),
 			)
 
-			err := handler.OnConnection(conn)
+			err := handler.OnConnection(ctx, conn)
 			if err != nil {
 				slog.Error("connection errored",
 					slog.Int("worker", worker),

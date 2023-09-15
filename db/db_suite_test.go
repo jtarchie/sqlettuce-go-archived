@@ -1,6 +1,7 @@
 package db_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/jtarchie/sqlettus/db"
@@ -25,10 +26,10 @@ var _ = Describe("Client", func() {
 
 	When("Set", func() {
 		It("sets a value", func() {
-			err := client.Set("key", "value")
+			err := client.Set(context.TODO(), "key", "value")
 			Expect(err).NotTo(HaveOccurred())
 
-			value, err := client.Get("key")
+			value, err := client.Get(context.TODO(), "key")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(*value).To(Equal("value"))
 		})
@@ -36,13 +37,13 @@ var _ = Describe("Client", func() {
 
 	When("FlushAll", func() {
 		It("resets all values", func() {
-			err := client.Set("key", "value")
+			err := client.Set(context.TODO(), "key", "value")
 			Expect(err).NotTo(HaveOccurred())
 
 			err = client.FlushAll()
 			Expect(err).NotTo(HaveOccurred())
 
-			value, err := client.Get("key")
+			value, err := client.Get(context.TODO(), "key")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(value).To(BeNil())
 		})

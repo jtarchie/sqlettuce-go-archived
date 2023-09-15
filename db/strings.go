@@ -9,8 +9,8 @@ import (
 	"github.com/jtarchie/sqlettus/db/writers"
 )
 
-func (c *Client) Set(name, value string) error {
-	err := c.writers.Set(context.Background(), writers.SetParams{
+func (c *Client) Set(ctx context.Context, name, value string) error {
+	err := c.writers.Set(ctx, writers.SetParams{
 		Name:  name,
 		Value: value,
 	})
@@ -21,8 +21,8 @@ func (c *Client) Set(name, value string) error {
 	return nil
 }
 
-func (c *Client) Get(name string) (*string, error) {
-	value, err := c.readers.Get(context.Background(), name)
+func (c *Client) Get(ctx context.Context, name string) (*string, error) {
+	value, err := c.readers.Get(ctx, name)
 
 	//nolint:nilnil
 	if errors.Is(err, sql.ErrNoRows) {

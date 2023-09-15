@@ -1,9 +1,10 @@
 package tcp
 
 import (
+	"context"
 	"io"
 )
 
 type Handler interface {
-	OnConnection(io.ReadWriter) error
+	OnConnection(context.Context, io.ReadWriter) error
 }

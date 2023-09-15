@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/jtarchie/sqlettus/db"
@@ -15,18 +16,20 @@ type CLI struct {
 }
 
 func (c *CLI) Run() error {
+	ctx := context.TODO()
+
 	client, err := db.NewClient(c.Filename)
 	if err != nil {
 		return fmt.Errorf("could not start db client: %w", err)
 	}
 	defer client.Close()
 
-	server, err := tcp.NewServer(c.Port, c.Workers)
+	server, err := tcp.NewServer(ctx, c.Port, c.Workers)
 	if err != nil {
 		return fmt.Errorf("could not create server: %w", err)
 	}
 
-	err = server.Listen(handler.New(client))
+	err = server.Listen(ctx, handler.New(client))
 	if err != nil {
 		return fmt.Errorf("could not listen for server: %w", err)
 	}

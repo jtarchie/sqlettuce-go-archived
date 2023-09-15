@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -23,9 +24,9 @@ func New(client *db.Client) *Handler {
 
 var _ tcp.Handler = &Handler{}
 
-func (h *Handler) OnConnection(conn io.ReadWriter) error {
+func (h *Handler) OnConnection(ctx context.Context, conn io.ReadWriter) error {
 	reader := bufio.NewReader(conn)
-	rootRouter := router.New(h.client)
+	rootRouter := router.New(ctx, h.client)
 
 	for {
 		var tokens []string
