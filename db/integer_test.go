@@ -14,7 +14,7 @@ var _ = Describe("Integer", func() {
 	BeforeEach(func() {
 		var err error
 
-		client, err = db.NewClient(":memory:?cache=shared&mode=memory")
+		client, err = db.NewClient("sqlite://:memory:?cache=shared&mode=memory")
 		Expect(err).NotTo(HaveOccurred())
 	})
 

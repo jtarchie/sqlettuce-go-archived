@@ -25,7 +25,7 @@ var _ = Describe("CLI", func() {
 
 		cli := &CLI{
 			Port:     uint(port),
-			Filename: ":memory:?cache=shared&mode=memory",
+			Filename: "sqlite://:memory:?cache=shared&mode=memory",
 			Workers:  1,
 		}
 		go func() {

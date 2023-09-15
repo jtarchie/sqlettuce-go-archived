@@ -1,18 +1,20 @@
 version: "2"
 sql:
   - engine: "sqlite"
-    queries: "db/readers.sql"
-    schema: "db/migrations"
+    queries: "db/drivers/sqlite/readers.sql"
+    schema: "db/drivers/sqlite/migrations"
     gen:
       go:
         package: "readers"
-        out: "db/readers"
+        out: "db/drivers/sqlite/readers"
         emit_prepared_queries: true
+        emit_interface: true
   - engine: "sqlite"
-    queries: "db/writers.sql"
-    schema: "db/migrations"
+    queries: "db/drivers/sqlite/writers.sql"
+    schema: "db/drivers/sqlite/migrations"
     gen:
       go:
         package: "writers"
-        out: "db/writers"
+        out: "db/drivers/sqlite/writers"
         emit_prepared_queries: true
+        emit_interface: true
