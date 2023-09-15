@@ -48,7 +48,7 @@ func New(
 			return nil
 		}),
 		"SET": minMaxTokens(2, 0, func(tokens []string, conn io.Writer) error {
-			err := client.Set(ctx, tokens[0], tokens[1])
+			err := client.Set(ctx, tokens[1], tokens[2])
 			if err != nil {
 				return fmt.Errorf("could not execute SET: %w", err)
 			}
@@ -61,7 +61,7 @@ func New(
 			return nil
 		}),
 		"GET": minMaxTokens(1, 0, func(tokens []string, conn io.Writer) error {
-			value, err := client.Get(ctx, tokens[0])
+			value, err := client.Get(ctx, tokens[1])
 			if err != nil {
 				return fmt.Errorf("could not execute GET: %w", err)
 			}
