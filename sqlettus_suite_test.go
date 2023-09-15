@@ -45,8 +45,11 @@ var _ = Describe("CLI", func() {
 		})
 
 		Expect(client.Ping(context.Background()).Err()).NotTo(HaveOccurred())
+		Expect(client.Echo(context.Background(), "message").Err()).NotTo(HaveOccurred())
+
+		Expect(client.FlushAll(context.Background()).Err()).NotTo(HaveOccurred())
+
 		Expect(client.Set(context.Background(), "name", "value", time.Minute).Err()).NotTo(HaveOccurred())
 		Expect(client.Get(context.Background(), "name").Err()).NotTo(HaveOccurred())
-		Expect(client.FlushAll(context.Background()).Err()).NotTo(HaveOccurred())
 	})
 })

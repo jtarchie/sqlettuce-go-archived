@@ -21,6 +21,15 @@ func New(client *db.Client) Command {
 				"appendonly": staticResponseRouter("+no\r\n"),
 			},
 		},
+		"PING": staticResponseRouter("+PONG\r\n"),
+		"ECHO": minMaxTokens(1, 0, func(tokens []string, conn io.Writer) error {
+			err := writeBulkString(conn, tokens[1])
+			if err != nil {
+				return fmt.Errorf("could not echo message: %w", err)
+			}
+
+			return nil
+		}),
 		"FLUSHALL": CallbackRouter(func(_ []string, conn io.Writer) error {
 			err := client.FlushAll()
 			if err != nil {
@@ -34,7 +43,6 @@ func New(client *db.Client) Command {
 
 			return nil
 		}),
-		"PING": staticResponseRouter("+PONG\r\n"),
 		"SET": minMaxTokens(2, 0, func(tokens []string, conn io.Writer) error {
 			err := client.Set(tokens[0], tokens[1])
 			if err != nil {
@@ -60,17 +68,29 @@ func New(client *db.Client) Command {
 					return fmt.Errorf("could not send reply: %w", err)
 				}
 			} else {
-				_, _ = conn.Write([]byte("$"))
-				_, _ = io.WriteString(conn, strconv.Itoa(len(*value)))
-				_, _ = io.WriteString(conn, "\r\n")
-				_, _ = io.WriteString(conn, *value)
-				_, err = io.WriteString(conn, "\r\n")
+				err := writeBulkString(conn, *value)
 				if err != nil {
-					return fmt.Errorf("could not send reply: %w", err)
+					return fmt.Errorf("could not write value: %w", err)
 				}
+
+				return nil
 			}
 
 			return nil
 		}),
 	}
+}
+
+func writeBulkString(conn io.Writer, value string) error {
+	_, _ = conn.Write([]byte("$"))
+	_, _ = io.WriteString(conn, strconv.Itoa(len(value)))
+	_, _ = io.WriteString(conn, "\r\n")
+	_, _ = io.WriteString(conn, value)
+
+	_, err := io.WriteString(conn, "\r\n")
+	if err != nil {
+		return fmt.Errorf("could not send reply: %w", err)
+	}
+
+	return nil
 }
