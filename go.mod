@@ -7,7 +7,6 @@ require (
 	github.com/antelman107/net-wait-go v0.0.0-20220211074630-12d8a944b87d
 	github.com/golang-migrate/migrate/v4 v4.16.2
 	github.com/jtarchie/worker v0.0.0-20230413212901-08da1e5cf675
-	github.com/libp2p/go-reuseport v0.4.0
 	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/onsi/ginkgo/v2 v2.12.0
 	github.com/onsi/gomega v1.27.10
