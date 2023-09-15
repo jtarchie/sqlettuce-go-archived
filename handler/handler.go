@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/jtarchie/sqlettus/db"
-	"github.com/jtarchie/sqlettus/router"
 	"github.com/jtarchie/sqlettus/tcp"
 )
 
@@ -26,9 +25,14 @@ func New(client *db.Client) *Handler {
 
 var _ tcp.Handler = &Handler{}
 
+var (
+	ErrIncorrectTokens = fmt.Errorf("received incorrect tokens")
+	ErrNoCommandFound  = fmt.Errorf("could not determine command, none were sent")
+)
+
 func (h *Handler) OnConnection(ctx context.Context, conn io.ReadWriter) error {
 	reader := bufio.NewReader(conn)
-	routes := router.New(ctx, h.client)
+	routes := NewRoutes(ctx, h.client)
 
 	for {
 		var tokens []string
@@ -55,7 +59,7 @@ func (h *Handler) OnConnection(ctx context.Context, conn io.ReadWriter) error {
 		tokensLength := len(tokens)
 
 		if tokensLength == 0 {
-			return router.ErrNoCommandFound
+			return ErrNoCommandFound
 		}
 
 		callback, found := routes.Lookup(tokens)
@@ -82,7 +86,7 @@ func readString(reader *bufio.Reader) ([]byte, error) {
 	}
 
 	if len(line) != expectedLength {
-		return nil, fmt.Errorf("could not read string of expected length: %w", router.ErrIncorrectTokens)
+		return nil, fmt.Errorf("could not read string of expected length: %w", ErrIncorrectTokens)
 	}
 
 	return line, nil

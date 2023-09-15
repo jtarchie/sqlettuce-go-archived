@@ -1,4 +1,4 @@
-package router
+package handler
 
 import (
 	"context"
@@ -8,25 +8,26 @@ import (
 	"strconv"
 
 	"github.com/jtarchie/sqlettus/db"
+	"github.com/jtarchie/sqlettus/router"
 )
 
 //nolint:funlen,cyclop
-func New(
+func NewRoutes(
 	ctx context.Context,
 	client *db.Client,
-) Command {
-	return Command{
-		"COMMAND": Command{
-			"DOCS": StaticResponseRouter("+\r\n"),
+) router.Command {
+	return router.Command{
+		"COMMAND": router.Command{
+			"DOCS": router.StaticResponseRouter("+\r\n"),
 		},
-		"CONFIG": Command{
-			"GET": Command{
-				"save":       StaticResponseRouter("+\r\n"),
-				"appendonly": StaticResponseRouter("+no\r\n"),
+		"CONFIG": router.Command{
+			"GET": router.Command{
+				"save":       router.StaticResponseRouter("+\r\n"),
+				"appendonly": router.StaticResponseRouter("+no\r\n"),
 			},
 		},
-		"PING": StaticResponseRouter("+PONG\r\n"),
-		"ECHO": MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
+		"PING": router.StaticResponseRouter("+PONG\r\n"),
+		"ECHO": router.MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
 			err := writeBulkString(conn, tokens[1])
 			if err != nil {
 				return fmt.Errorf("could not echo message: %w", err)
@@ -34,20 +35,20 @@ func New(
 
 			return nil
 		}),
-		"FLUSHALL": CallbackRouter(func(_ []string, conn io.Writer) error {
+		"FLUSHALL": router.CallbackRouter(func(_ []string, conn io.Writer) error {
 			err := client.FlushAll()
 			if err != nil {
 				slog.Error("could not FLUSHALL", slog.String("error", err.Error()))
 			}
 
-			_, err = io.WriteString(conn, OKResponse)
+			_, err = io.WriteString(conn, router.OKResponse)
 			if err != nil {
 				return fmt.Errorf("could not send reply: %w", err)
 			}
 
 			return nil
 		}),
-		"DEL": MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
+		"DEL": router.MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
 			count := 0
 
 			for _, name := range tokens[1:] {
@@ -67,20 +68,20 @@ func New(
 
 			return nil
 		}),
-		"SET": MinMaxTokensRouter(2, 0, func(tokens []string, conn io.Writer) error {
+		"SET": router.MinMaxTokensRouter(2, 0, func(tokens []string, conn io.Writer) error {
 			err := client.Set(ctx, tokens[1], tokens[2])
 			if err != nil {
 				return fmt.Errorf("could not execute SET: %w", err)
 			}
 
-			_, err = io.WriteString(conn, OKResponse)
+			_, err = io.WriteString(conn, router.OKResponse)
 			if err != nil {
 				return fmt.Errorf("could not send reply: %w", err)
 			}
 
 			return nil
 		}),
-		"GET": MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
+		"GET": router.MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
 			value, err := client.Get(ctx, tokens[1])
 			if err != nil {
 				return fmt.Errorf("could not execute GET: %w", err)
