@@ -116,6 +116,72 @@ func NewRoutes(
 
 			return nil
 		}),
+		"DECR": router.MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
+			value, err := client.AddInt(ctx, tokens[1], -1)
+			if err != nil {
+				return fmt.Errorf("could not execute DECR: %w", err)
+			}
+
+			err = writeInt(conn, value)
+			if err != nil {
+				return fmt.Errorf("could not write value: %w", err)
+			}
+
+			return nil
+		}),
+		"INCR": router.MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
+			value, err := client.AddInt(ctx, tokens[1], 1)
+			if err != nil {
+				return fmt.Errorf("could not execute INCR: %w", err)
+			}
+
+			err = writeInt(conn, value)
+			if err != nil {
+				return fmt.Errorf("could not write value: %w", err)
+			}
+
+			return nil
+		}),
+		"INCRBY": router.MinMaxTokensRouter(2, 0, func(tokens []string, conn io.Writer) error {
+			incr, err := strconv.Atoi(tokens[2])
+			if err != nil {
+				_, _ = io.WriteString(conn, "-Expected integer value to increment\r\n")
+
+				return fmt.Errorf("could not parse integer: %w", err)
+			}
+
+			value, err := client.AddInt(ctx, tokens[1], incr)
+			if err != nil {
+				return fmt.Errorf("could not execute INCRBY: %w", err)
+			}
+
+			err = writeInt(conn, value)
+			if err != nil {
+				return fmt.Errorf("could not write value: %w", err)
+			}
+
+			return nil
+		}),
+		"DECRBY": router.MinMaxTokensRouter(2, 0, func(tokens []string, conn io.Writer) error {
+			incr, err := strconv.Atoi(tokens[2])
+			if err != nil {
+				_, _ = io.WriteString(conn, "-Expected integer value to increment\r\n")
+
+				return fmt.Errorf("could not parse integer: %w", err)
+			}
+
+			value, err := client.AddInt(ctx, tokens[1], -incr)
+			if err != nil {
+				return fmt.Errorf("could not execute DECRBY: %w", err)
+			}
+
+			err = writeInt(conn, value)
+			if err != nil {
+				return fmt.Errorf("could not write value: %w", err)
+			}
+
+			return nil
+		}),
 	}
 
 	commands["FLUSHDB"] = commands["FLUSHALL"]
@@ -126,9 +192,7 @@ func NewRoutes(
 func writeInt(conn io.Writer, value int) error {
 	_, _ = io.WriteString(conn, ":")
 
-	if value < 0 {
-		_, _ = io.WriteString(conn, "-")
-	} else {
+	if value >= 0 {
 		_, _ = io.WriteString(conn, "+")
 	}
 

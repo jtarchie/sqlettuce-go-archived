@@ -24,6 +24,9 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
+	if q.addIntStmt, err = db.PrepareContext(ctx, addInt); err != nil {
+		return nil, fmt.Errorf("error preparing query AddInt: %w", err)
+	}
 	if q.appendStmt, err = db.PrepareContext(ctx, append); err != nil {
 		return nil, fmt.Errorf("error preparing query Append: %w", err)
 	}
@@ -41,6 +44,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 
 func (q *Queries) Close() error {
 	var err error
+	if q.addIntStmt != nil {
+		if cerr := q.addIntStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing addIntStmt: %w", cerr)
+		}
+	}
 	if q.appendStmt != nil {
 		if cerr := q.appendStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing appendStmt: %w", cerr)
@@ -100,6 +108,7 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 type Queries struct {
 	db           DBTX
 	tx           *sql.Tx
+	addIntStmt   *sql.Stmt
 	appendStmt   *sql.Stmt
 	deleteStmt   *sql.Stmt
 	flushAllStmt *sql.Stmt
@@ -110,6 +119,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
 		db:           tx,
 		tx:           tx,
+		addIntStmt:   q.addIntStmt,
 		appendStmt:   q.appendStmt,
 		deleteStmt:   q.deleteStmt,
 		flushAllStmt: q.flushAllStmt,

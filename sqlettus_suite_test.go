@@ -79,5 +79,21 @@ var _ = Describe("CLI", func() {
 		value, err = client.Get(context.Background(), "name").Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(value).To(Equal(""))
+
+		intVal, err = client.Decr(context.Background(), "key").Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(intVal).To(BeEquivalentTo(-1))
+
+		intVal, err = client.IncrBy(context.Background(), "key", 2).Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(intVal).To(BeEquivalentTo(1))
+
+		intVal, err = client.DecrBy(context.Background(), "key", 4).Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(intVal).To(BeEquivalentTo(-3))
+
+		intVal, err = client.Incr(context.Background(), "key").Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(intVal).To(BeEquivalentTo(-2))
 	})
 })

@@ -11,7 +11,7 @@ import (
 
 const get = `-- name: Get :one
 SELECT value
-FROM strings
+FROM keys
 WHERE name = ?1
 `
 

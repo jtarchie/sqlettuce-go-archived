@@ -6,7 +6,7 @@ package writers
 
 import ()
 
-type String struct {
+type Key struct {
 	Name  string
 	Value string
 }

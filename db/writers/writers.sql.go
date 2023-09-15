@@ -10,8 +10,29 @@ import (
 	"database/sql"
 )
 
+const addInt = `-- name: AddInt :one
+INSERT INTO keys (name, value)
+VALUES (?1, ?2) ON CONFLICT(name) DO
+UPDATE
+SET value = CAST(value AS INTEGER) + CAST(excluded.value AS INTEGER)
+WHERE printf("%d", value) = value
+RETURNING CAST(value AS INTEGER)
+`
+
+type AddIntParams struct {
+	Name  string
+	Value string
+}
+
+func (q *Queries) AddInt(ctx context.Context, arg AddIntParams) (int64, error) {
+	row := q.queryRow(ctx, q.addIntStmt, addInt, arg.Name, arg.Value)
+	var value int64
+	err := row.Scan(&value)
+	return value, err
+}
+
 const append = `-- name: Append :one
-INSERT INTO strings (name, value)
+INSERT INTO keys (name, value)
 VALUES (?1, ?2) ON CONFLICT(name) DO
 UPDATE
 SET value = value || excluded.value RETURNING length(value)
@@ -30,7 +51,7 @@ func (q *Queries) Append(ctx context.Context, arg AppendParams) (sql.NullInt64, 
 }
 
 const delete = `-- name: Delete :exec
-DELETE FROM strings WHERE name = ?1
+DELETE FROM keys WHERE name = ?1
 `
 
 func (q *Queries) Delete(ctx context.Context, name string) error {
@@ -39,7 +60,7 @@ func (q *Queries) Delete(ctx context.Context, name string) error {
 }
 
 const flushAll = `-- name: FlushAll :exec
-DELETE FROM strings
+DELETE FROM keys
 `
 
 func (q *Queries) FlushAll(ctx context.Context) error {
@@ -48,7 +69,7 @@ func (q *Queries) FlushAll(ctx context.Context) error {
 }
 
 const set = `-- name: Set :exec
-INSERT INTO strings (name, value)
+INSERT INTO keys (name, value)
 VALUES (?1, ?2) ON CONFLICT(name) DO
 UPDATE
 SET value = excluded.value
