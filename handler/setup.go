@@ -16,7 +16,7 @@ func NewRoutes(
 	ctx context.Context,
 	client *db.Client,
 ) router.Command {
-	return router.Command{
+	commands := router.Command{
 		"COMMAND": router.Command{
 			"DOCS": router.StaticResponseRouter("+\r\n"),
 		},
@@ -104,6 +104,10 @@ func NewRoutes(
 			return nil
 		}),
 	}
+
+	commands["FLUSHDB"] = commands["FLUSHALL"]
+
+	return commands
 }
 
 func writeInt(conn io.Writer, value int) error {

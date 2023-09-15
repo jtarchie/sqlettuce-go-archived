@@ -56,6 +56,10 @@ var _ = Describe("CLI", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(value).To(Equal("OK"))
 
+		value, err = client.FlushDB(context.Background()).Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(value).To(Equal("OK"))
+
 		value, err = client.Set(context.Background(), "name", "value", time.Hour).Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(value).To(Equal("OK"))
