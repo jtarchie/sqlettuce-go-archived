@@ -11,7 +11,7 @@ import (
 	"github.com/jtarchie/sqlettus/router"
 )
 
-//nolint:funlen,cyclop,gocognit,maintidx
+//nolint:funlen,cyclop,gocognit,maintidx,gocyclo
 func NewRoutes(
 	ctx context.Context,
 	client *db.Client,
@@ -198,6 +198,22 @@ func NewRoutes(
 			}
 
 			err = writeInt(conn, value)
+			if err != nil {
+				return fmt.Errorf("could not write value: %w", err)
+			}
+
+			return nil
+		}),
+		"GETRANGE": router.MinMaxTokensRouter(3, 0, func(tokens []string, conn io.Writer) error {
+			start, _ := strconv.Atoi(tokens[2])
+			end, _ := strconv.Atoi(tokens[3])
+
+			value, err := client.Substr(ctx, tokens[1], int64(start), int64(end))
+			if err != nil {
+				return fmt.Errorf("could not execute GETRANGE: %w", err)
+			}
+
+			err = writeBulkString(conn, value)
 			if err != nil {
 				return fmt.Errorf("could not write value: %w", err)
 			}

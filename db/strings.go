@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jtarchie/sqlettus/db/readers"
 	"github.com/jtarchie/sqlettus/db/writers"
 )
 
@@ -61,4 +62,22 @@ func (c *Client) Append(ctx context.Context, name, value string) (int, error) {
 	}
 
 	return int(length.Int64), nil
+}
+
+func (c *Client) Substr(ctx context.Context, name string, start, end int64) (string, error) {
+	value, err := c.readers.Substr(ctx, readers.SubstrParams{
+		Name:  name,
+		Start: start,
+		End:   end,
+	})
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", nil
+	}
+
+	if err != nil {
+		return "", fmt.Errorf("could not SUBSTR: %w", err)
+	}
+
+	return value, nil
 }

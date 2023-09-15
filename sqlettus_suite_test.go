@@ -25,7 +25,7 @@ var _ = Describe("CLI", func() {
 
 		cli := &CLI{
 			Port:     uint(port),
-			Filename: "file:test.db?cache=shared&mode=memory",
+			Filename: ":memory:?cache=shared&mode=memory",
 			Workers:  1,
 		}
 		go func() {
@@ -44,14 +44,17 @@ var _ = Describe("CLI", func() {
 			DB:       0,  // use default DB
 		})
 
+		By("Sending PING message")
 		value, err := client.Ping(context.Background()).Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(value).To(Equal("PONG"))
 
+		By("Sending ECHO message")
 		value, err = client.Echo(context.Background(), "message").Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(value).To(Equal("message"))
 
+		By("Reset the whole database")
 		value, err = client.FlushAll(context.Background()).Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(value).To(Equal("OK"))
@@ -60,6 +63,7 @@ var _ = Describe("CLI", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(value).To(Equal("OK"))
 
+		By("Set a value")
 		value, err = client.Set(context.Background(), "name", "hello", time.Hour).Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(value).To(Equal("OK"))
@@ -72,6 +76,7 @@ var _ = Describe("CLI", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(intVal).To(BeEquivalentTo(11))
 
+		By("Delete a value")
 		intVal, err = client.Del(context.Background(), "name").Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(intVal).To(BeEquivalentTo(1))
@@ -80,6 +85,7 @@ var _ = Describe("CLI", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(value).To(Equal(""))
 
+		By("increment and decrement values")
 		intVal, err = client.Decr(context.Background(), "key").Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(intVal).To(BeEquivalentTo(-1))
@@ -99,5 +105,16 @@ var _ = Describe("CLI", func() {
 		value, err = client.GetDel(context.Background(), "key").Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(value).To(Equal("-2"))
+
+		set(client, "key", "This is a string")
+
+		value, err = client.GetRange(context.Background(), "key", -3, -1).Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(value).To(Equal("ing"))
 	})
 })
+
+func set(client *redis.Client, key, value string) {
+	err := client.Set(context.Background(), key, value, time.Hour).Err()
+	Expect(err).NotTo(HaveOccurred())
+}

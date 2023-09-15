@@ -81,4 +81,31 @@ var _ = Describe("Strings", func() {
 			Expect(*value).To(Equal("Hello World"))
 		})
 	})
+
+	When("Substr", func() {
+		It("handles start and end, using negative indexes, too", func() {
+			err := client.Set(context.TODO(), "key", "This is a string")
+			Expect(err).NotTo(HaveOccurred())
+
+			value, err := client.Substr(context.TODO(), "key", 0, 3)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(value).To(Equal("This"))
+
+			value, err = client.Substr(context.TODO(), "key", -3, -1)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(value).To(Equal("ing"))
+
+			value, err = client.Substr(context.TODO(), "key", 0, -1)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(value).To(Equal("This is a string"))
+
+			value, err = client.Substr(context.TODO(), "key", 10, 100)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(value).To(Equal("string"))
+
+			value, err = client.Substr(context.TODO(), "nokey", 0, 1)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(value).To(Equal(""))
+		})
+	})
 })

@@ -21,3 +21,30 @@ func (q *Queries) Get(ctx context.Context, name string) (string, error) {
 	err := row.Scan(&value)
 	return value, err
 }
+
+const substr = `-- name: Substr :one
+SELECT SUBSTR(
+  value,
+  IIF(?1 < 0,
+    ?1,
+    ?1 + 1
+  ),
+  IIF(?2 < 0,
+    LENGTH(value) - ?2,
+    ?1 + ?2 + 1
+  )
+) FROM keys WHERE name = ?3
+`
+
+type SubstrParams struct {
+	Start interface{}
+	End   interface{}
+	Name  string
+}
+
+func (q *Queries) Substr(ctx context.Context, arg SubstrParams) (string, error) {
+	row := q.queryRow(ctx, q.substrStmt, substr, arg.Start, arg.End, arg.Name)
+	var substr string
+	err := row.Scan(&substr)
+	return substr, err
+}
