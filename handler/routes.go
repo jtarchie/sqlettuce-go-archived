@@ -191,11 +191,6 @@ func NewRoutes(
 
 func writeInt(conn io.Writer, value int) error {
 	_, _ = io.WriteString(conn, ":")
-
-	if value >= 0 {
-		_, _ = io.WriteString(conn, "+")
-	}
-
 	_, _ = io.WriteString(conn, strconv.Itoa(value))
 
 	_, err := io.WriteString(conn, "\r\n")

@@ -99,7 +99,8 @@ func readNumber(prefix byte, rw *bufio.Reader) (int, error) {
 	}
 
 	if line[0] != prefix {
-		return 0, fmt.Errorf("expected line to have prefix %q, actual %q: %w", prefix, line[0], err)
+		//nolint:goerr113
+		return 0, fmt.Errorf("expected line to have prefix %q, actual %q", prefix, line[0])
 	}
 
 	count := atoi(string(line[1:]))
