@@ -60,15 +60,19 @@ var _ = Describe("CLI", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(value).To(Equal("OK"))
 
-		value, err = client.Set(context.Background(), "name", "value", time.Hour).Result()
+		value, err = client.Set(context.Background(), "name", "hello", time.Hour).Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(value).To(Equal("OK"))
 
 		value, err = client.Get(context.Background(), "name").Result()
 		Expect(err).NotTo(HaveOccurred())
-		Expect(value).To(Equal("value"))
+		Expect(value).To(Equal("hello"))
 
-		intVal, err := client.Del(context.Background(), "name").Result()
+		intVal, err := client.Append(context.Background(), "name", " world").Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(intVal).To(BeEquivalentTo(11))
+
+		intVal, err = client.Del(context.Background(), "name").Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(intVal).To(BeEquivalentTo(1))
 

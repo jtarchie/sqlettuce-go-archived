@@ -7,7 +7,27 @@ package writers
 
 import (
 	"context"
+	"database/sql"
 )
+
+const append = `-- name: Append :one
+INSERT INTO strings (name, value)
+VALUES (?1, ?2) ON CONFLICT(name) DO
+UPDATE
+SET value = value || excluded.value RETURNING length(value)
+`
+
+type AppendParams struct {
+	Name  string
+	Value string
+}
+
+func (q *Queries) Append(ctx context.Context, arg AppendParams) (sql.NullInt64, error) {
+	row := q.queryRow(ctx, q.appendStmt, append, arg.Name, arg.Value)
+	var length sql.NullInt64
+	err := row.Scan(&length)
+	return length, err
+}
 
 const delete = `-- name: Delete :exec
 DELETE FROM strings WHERE name = ?1

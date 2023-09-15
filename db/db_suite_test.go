@@ -79,4 +79,24 @@ var _ = Describe("Client", func() {
 			Expect(value).To(BeNil())
 		})
 	})
+
+	When("Append", func() {
+		It("appends values to a string", func() {
+			length, err := client.Append(context.TODO(), "name", "Hello")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(length).To(BeEquivalentTo(5))
+
+			value, err := client.Get(context.TODO(), "name")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(*value).To(Equal("Hello"))
+
+			length, err = client.Append(context.TODO(), "name", " World")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(length).To(BeEquivalentTo(11))
+
+			value, err = client.Get(context.TODO(), "name")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(*value).To(Equal("Hello World"))
+		})
+	})
 })

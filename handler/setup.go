@@ -11,7 +11,7 @@ import (
 	"github.com/jtarchie/sqlettus/router"
 )
 
-//nolint:funlen,cyclop
+//nolint:funlen,cyclop,gocognit
 func NewRoutes(
 	ctx context.Context,
 	client *db.Client,
@@ -99,6 +99,19 @@ func NewRoutes(
 				}
 
 				return nil
+			}
+
+			return nil
+		}),
+		"APPEND": router.MinMaxTokensRouter(2, 0, func(tokens []string, conn io.Writer) error {
+			value, err := client.Append(ctx, tokens[1], tokens[2])
+			if err != nil {
+				return fmt.Errorf("could not execute APPEND: %w", err)
+			}
+
+			err = writeInt(conn, value)
+			if err != nil {
+				return fmt.Errorf("could not write value: %w", err)
 			}
 
 			return nil

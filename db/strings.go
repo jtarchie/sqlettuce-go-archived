@@ -44,3 +44,15 @@ func (c *Client) Delete(ctx context.Context, name string) error {
 
 	return nil
 }
+
+func (c *Client) Append(ctx context.Context, name, value string) (int, error) {
+	length, err := c.writers.Append(ctx, writers.AppendParams{
+		Name:  name,
+		Value: value,
+	})
+	if err != nil {
+		return 0, fmt.Errorf("could not APPEND: %w", err)
+	}
+
+	return int(length.Int64), nil
+}
