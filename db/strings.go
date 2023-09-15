@@ -36,13 +36,19 @@ func (c *Client) Get(ctx context.Context, name string) (*string, error) {
 	return &value, nil
 }
 
-func (c *Client) Delete(ctx context.Context, name string) error {
-	err := c.writers.Delete(ctx, name)
-	if err != nil {
-		return fmt.Errorf("could not DELETE: %w", err)
+func (c *Client) Delete(ctx context.Context, name string) (*string, error) {
+	value, err := c.writers.Delete(ctx, name)
+
+	//nolint:nilnil
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
 	}
 
-	return nil
+	if err != nil {
+		return nil, fmt.Errorf("could not DELETE: %w", err)
+	}
+
+	return &value, nil
 }
 
 func (c *Client) Append(ctx context.Context, name, value string) (int, error) {

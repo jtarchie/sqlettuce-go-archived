@@ -95,5 +95,9 @@ var _ = Describe("CLI", func() {
 		intVal, err = client.Incr(context.Background(), "key").Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(intVal).To(BeEquivalentTo(-2))
+
+		value, err = client.GetDel(context.Background(), "key").Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(value).To(Equal("-2"))
 	})
 })

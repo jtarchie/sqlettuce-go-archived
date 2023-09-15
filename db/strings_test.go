@@ -46,17 +46,19 @@ var _ = Describe("Strings", func() {
 			err := client.Set(context.TODO(), "key", "value")
 			Expect(err).NotTo(HaveOccurred())
 
-			err = client.Delete(context.TODO(), "key")
+			value, err := client.Delete(context.TODO(), "key")
 			Expect(err).NotTo(HaveOccurred())
+			Expect(*value).To(Equal("value"))
 
-			value, err := client.Get(context.TODO(), "key")
+			value, err = client.Get(context.TODO(), "key")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(value).To(BeNil())
 		})
 
 		It("does not fail on missing value", func() {
-			err := client.Delete(context.TODO(), "key")
+			value, err := client.Delete(context.TODO(), "key")
 			Expect(err).NotTo(HaveOccurred())
+			Expect(value).To(BeNil())
 		})
 	})
 
