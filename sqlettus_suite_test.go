@@ -44,10 +44,17 @@ var _ = Describe("CLI", func() {
 			DB:       0,  // use default DB
 		})
 
-		Expect(client.Ping(context.Background()).Err()).NotTo(HaveOccurred())
-		Expect(client.Echo(context.Background(), "message").Err()).NotTo(HaveOccurred())
+		value, err := client.Ping(context.Background()).Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(value).To(Equal("PONG"))
 
-		Expect(client.FlushAll(context.Background()).Err()).NotTo(HaveOccurred())
+		value, err = client.Echo(context.Background(), "message").Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(value).To(Equal("message"))
+
+		value, err = client.FlushAll(context.Background()).Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(value).To(Equal("OK"))
 
 		Expect(client.Set(context.Background(), "name", "value", time.Minute).Err()).NotTo(HaveOccurred())
 		Expect(client.Get(context.Background(), "name").Err()).NotTo(HaveOccurred())
