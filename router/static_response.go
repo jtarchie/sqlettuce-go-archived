@@ -16,10 +16,10 @@ func staticResponseCallback(response string) Callback {
 	}
 }
 
-type staticResponseRouter string
+type StaticResponseRouter string
 
-func (s staticResponseRouter) Lookup(_ []string) (Callback, error) {
-	return staticResponseCallback(string(s)), nil
+func (s StaticResponseRouter) Lookup(_ []string) (Callback, bool) {
+	return staticResponseCallback(string(s)), true
 }
 
-var _ Router = staticResponseRouter("")
+var _ Router = StaticResponseRouter("")

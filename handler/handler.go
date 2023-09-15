@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
+	"strings"
 
 	"github.com/jtarchie/sqlettus/db"
 	"github.com/jtarchie/sqlettus/router"
@@ -26,7 +28,7 @@ var _ tcp.Handler = &Handler{}
 
 func (h *Handler) OnConnection(ctx context.Context, conn io.ReadWriter) error {
 	reader := bufio.NewReader(conn)
-	rootRouter := router.New(ctx, h.client)
+	routes := router.New(ctx, h.client)
 
 	for {
 		var tokens []string
@@ -56,9 +58,9 @@ func (h *Handler) OnConnection(ctx context.Context, conn io.ReadWriter) error {
 			return router.ErrNoCommandFound
 		}
 
-		callback, err := rootRouter.Lookup(tokens)
-		if err != nil {
-			return fmt.Errorf("could not execute router with tokens: %w", err)
+		callback, found := routes.Lookup(tokens)
+		if !found {
+			slog.Debug("could not found route", slog.String("tokens", strings.Join(tokens, " ")))
 		}
 
 		err = callback(tokens, conn)

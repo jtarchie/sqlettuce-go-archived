@@ -15,5 +15,5 @@ const (
 )
 
 type Router interface {
-	Lookup(tokens []string) (Callback, error)
+	Lookup(tokens []string) (Callback, bool)
 }

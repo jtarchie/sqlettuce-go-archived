@@ -17,16 +17,16 @@ func New(
 ) Command {
 	return Command{
 		"COMMAND": Command{
-			"DOCS": staticResponseRouter("+\r\n"),
+			"DOCS": StaticResponseRouter("+\r\n"),
 		},
 		"CONFIG": Command{
 			"GET": Command{
-				"save":       staticResponseRouter("+\r\n"),
-				"appendonly": staticResponseRouter("+no\r\n"),
+				"save":       StaticResponseRouter("+\r\n"),
+				"appendonly": StaticResponseRouter("+no\r\n"),
 			},
 		},
-		"PING": staticResponseRouter("+PONG\r\n"),
-		"ECHO": minMaxTokens(1, 0, func(tokens []string, conn io.Writer) error {
+		"PING": StaticResponseRouter("+PONG\r\n"),
+		"ECHO": MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
 			err := writeBulkString(conn, tokens[1])
 			if err != nil {
 				return fmt.Errorf("could not echo message: %w", err)
@@ -47,7 +47,7 @@ func New(
 
 			return nil
 		}),
-		"DEL": minMaxTokens(1, 0, func(tokens []string, conn io.Writer) error {
+		"DEL": MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
 			count := 0
 
 			for _, name := range tokens[1:] {
@@ -67,7 +67,7 @@ func New(
 
 			return nil
 		}),
-		"SET": minMaxTokens(2, 0, func(tokens []string, conn io.Writer) error {
+		"SET": MinMaxTokensRouter(2, 0, func(tokens []string, conn io.Writer) error {
 			err := client.Set(ctx, tokens[1], tokens[2])
 			if err != nil {
 				return fmt.Errorf("could not execute SET: %w", err)
@@ -80,7 +80,7 @@ func New(
 
 			return nil
 		}),
-		"GET": minMaxTokens(1, 0, func(tokens []string, conn io.Writer) error {
+		"GET": MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
 			value, err := client.Get(ctx, tokens[1])
 			if err != nil {
 				return fmt.Errorf("could not execute GET: %w", err)

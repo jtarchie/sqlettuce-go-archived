@@ -8,7 +8,7 @@ import (
 
 type Command map[string]Router
 
-func (c Command) Lookup(tokens []string) (Callback, error) {
+func (c Command) Lookup(tokens []string) (Callback, bool) {
 	command := strings.ToUpper(tokens[0])
 
 	next, ok := c[command]
@@ -17,20 +17,10 @@ func (c Command) Lookup(tokens []string) (Callback, error) {
 			slog.String("command", command),
 		)
 
-		return staticResponseRouter(fmt.Sprintf("-Unsupported command %q\r\n", command)).Lookup(tokens)
+		return staticResponseCallback(fmt.Sprintf("-Unsupported command %q\r\n", command)), false
 	}
 
-	callback, err := next.Lookup(tokens[1:])
-	if err != nil {
-		slog.Debug("could not lookup command",
-			slog.String("command", command),
-			slog.String("error", err.Error()),
-		)
-
-		return staticResponseRouter("-Unprocessable command\r\n").Lookup(tokens)
-	}
-
-	return callback, nil
+	return next.Lookup(tokens[1:])
 }
 
 var _ Router = Command{}
