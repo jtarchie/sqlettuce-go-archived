@@ -8,14 +8,14 @@ import (
 	"github.com/jtarchie/sqlettus/db/writers"
 )
 
-func (c *Client) AddInt(ctx context.Context, name string, value int) (int, error) {
+func (c *Client) AddInt(ctx context.Context, name string, value int64) (int64, error) {
 	intValue, err := c.writers.AddInt(ctx, writers.AddIntParams{
 		Name:  name,
-		Value: strconv.Itoa(value),
+		Value: strconv.FormatInt(value, 10),
 	})
 	if err != nil {
 		return 0, fmt.Errorf("could not ADDINT: %w", err)
 	}
 
-	return int(intValue), nil
+	return intValue, nil
 }

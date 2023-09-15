@@ -27,17 +27,19 @@ var _ = Describe("Strings", func() {
 			err := client.Set(context.TODO(), "key", "value")
 			Expect(err).NotTo(HaveOccurred())
 
-			value, err := client.Get(context.TODO(), "key")
+			value, found, err := client.Get(context.TODO(), "key")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(*value).To(Equal("value"))
+			Expect(found).To(BeTrue())
+			Expect(value).To(Equal("value"))
 		})
 	})
 
 	When("Get", func() {
 		It("return nil with non existent keys", func() {
-			value, err := client.Get(context.TODO(), "key")
+			value, found, err := client.Get(context.TODO(), "key")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(value).To(BeNil())
+			Expect(found).To(BeFalse())
+			Expect(value).To(Equal(""))
 		})
 	})
 
@@ -46,19 +48,22 @@ var _ = Describe("Strings", func() {
 			err := client.Set(context.TODO(), "key", "value")
 			Expect(err).NotTo(HaveOccurred())
 
-			value, err := client.Delete(context.TODO(), "key")
+			value, found, err := client.Delete(context.TODO(), "key")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(*value).To(Equal("value"))
+			Expect(found).To(BeTrue())
+			Expect(value).To(Equal("value"))
 
-			value, err = client.Get(context.TODO(), "key")
+			value, found, err = client.Get(context.TODO(), "key")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(value).To(BeNil())
+			Expect(found).To(BeFalse())
+			Expect(value).To(Equal(""))
 		})
 
 		It("does not fail on missing value", func() {
-			value, err := client.Delete(context.TODO(), "key")
+			value, found, err := client.Delete(context.TODO(), "key")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(value).To(BeNil())
+			Expect(found).To(BeFalse())
+			Expect(value).To(Equal(""))
 		})
 	})
 
@@ -68,17 +73,19 @@ var _ = Describe("Strings", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(length).To(BeEquivalentTo(5))
 
-			value, err := client.Get(context.TODO(), "name")
+			value, found, err := client.Get(context.TODO(), "name")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(*value).To(Equal("Hello"))
+			Expect(found).To(BeTrue())
+			Expect(value).To(Equal("Hello"))
 
 			length, err = client.Append(context.TODO(), "name", " World")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(length).To(BeEquivalentTo(11))
 
-			value, err = client.Get(context.TODO(), "name")
+			value, found, err = client.Get(context.TODO(), "name")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(*value).To(Equal("Hello World"))
+			Expect(found).To(BeTrue())
+			Expect(value).To(Equal("Hello World"))
 		})
 	})
 

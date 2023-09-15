@@ -49,16 +49,18 @@ func NewRoutes(
 			return nil
 		}),
 		"DEL": router.MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
-			count := 0
+			count := int64(0)
 
 			for _, name := range tokens[1:] {
-				_, err := client.Delete(ctx, name)
+				_, found, err := client.Delete(ctx, name)
 				if err != nil {
 					_ = writeInt(conn, count)
 
 					return fmt.Errorf("could not execute all DEL: %w", err)
 				}
-				count++
+				if found {
+					count++
+				}
 			}
 
 			err := writeInt(conn, count)
@@ -82,45 +84,45 @@ func NewRoutes(
 			return nil
 		}),
 		"GET": router.MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
-			value, err := client.Get(ctx, tokens[1])
+			value, found, err := client.Get(ctx, tokens[1])
 			if err != nil {
 				return fmt.Errorf("could not execute GET: %w", err)
 			}
 
-			if value == nil {
+			if !found {
 				_, err = io.WriteString(conn, "+\r\n")
 				if err != nil {
 					return fmt.Errorf("could not send reply: %w", err)
 				}
-			} else {
-				err := writeBulkString(conn, *value)
-				if err != nil {
-					return fmt.Errorf("could not write value: %w", err)
-				}
 
 				return nil
+			}
+
+			err = writeBulkString(conn, value)
+			if err != nil {
+				return fmt.Errorf("could not write value: %w", err)
 			}
 
 			return nil
 		}),
 		"GETDEL": router.MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
-			value, err := client.Delete(ctx, tokens[1])
+			value, found, err := client.Delete(ctx, tokens[1])
 			if err != nil {
 				return fmt.Errorf("could not execute GET: %w", err)
 			}
 
-			if value == nil {
+			if !found {
 				_, err = io.WriteString(conn, "+\r\n")
 				if err != nil {
 					return fmt.Errorf("could not send reply: %w", err)
 				}
-			} else {
-				err := writeBulkString(conn, *value)
-				if err != nil {
-					return fmt.Errorf("could not write value: %w", err)
-				}
 
 				return nil
+			}
+
+			err = writeBulkString(conn, value)
+			if err != nil {
+				return fmt.Errorf("could not write value: %w", err)
 			}
 
 			return nil
@@ -165,7 +167,7 @@ func NewRoutes(
 			return nil
 		}),
 		"INCRBY": router.MinMaxTokensRouter(2, 0, func(tokens []string, conn io.Writer) error {
-			incr, err := strconv.Atoi(tokens[2])
+			incr, err := strconv.ParseInt(tokens[2], 10, 64)
 			if err != nil {
 				_, _ = io.WriteString(conn, "-Expected integer value to increment\r\n")
 
@@ -185,7 +187,7 @@ func NewRoutes(
 			return nil
 		}),
 		"DECRBY": router.MinMaxTokensRouter(2, 0, func(tokens []string, conn io.Writer) error {
-			incr, err := strconv.Atoi(tokens[2])
+			incr, err := strconv.ParseInt(tokens[2], 10, 64)
 			if err != nil {
 				_, _ = io.WriteString(conn, "-Expected integer value to increment\r\n")
 
@@ -227,9 +229,9 @@ func NewRoutes(
 	return commands
 }
 
-func writeInt(conn io.Writer, value int) error {
+func writeInt(conn io.Writer, value int64) error {
 	_, _ = io.WriteString(conn, ":")
-	_, _ = io.WriteString(conn, strconv.Itoa(value))
+	_, _ = io.WriteString(conn, strconv.FormatInt(value, 10))
 
 	_, err := io.WriteString(conn, "\r\n")
 	if err != nil {

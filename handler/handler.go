@@ -47,7 +47,7 @@ func (h *Handler) OnConnection(ctx context.Context, conn io.ReadWriter) error {
 			return fmt.Errorf("could not read line number: %w", err)
 		}
 
-		for i := 0; i < lineCount; i++ {
+		for i := int64(0); i < lineCount; i++ {
 			token, err := readString(reader)
 			if err != nil {
 				return fmt.Errorf("could not read token: %w", err)
@@ -85,14 +85,14 @@ func readString(reader *bufio.Reader) ([]byte, error) {
 		return nil, fmt.Errorf("could not read string: %w", err)
 	}
 
-	if len(line) != expectedLength {
+	if int64(len(line)) != expectedLength {
 		return nil, fmt.Errorf("could not read string of expected length: %w", ErrIncorrectTokens)
 	}
 
 	return line, nil
 }
 
-func readNumber(prefix byte, rw *bufio.Reader) (int, error) {
+func readNumber(prefix byte, rw *bufio.Reader) (int64, error) {
 	line, _, err := rw.ReadLine()
 	if err != nil {
 		return 0, fmt.Errorf("could not read line with prefix %q: %w", prefix, err)
@@ -108,13 +108,13 @@ func readNumber(prefix byte, rw *bufio.Reader) (int, error) {
 	return count, nil
 }
 
-func atoi(num string) int {
-	var total, index int
+func atoi(num string) int64 {
+	var total, index int64
 loop:
-	total = total*10 + int(num[index]-'0')
+	total = total*10 + int64(num[index]-'0')
 	index++
 
-	if index < len(num) {
+	if index < int64(len(num)) {
 		goto loop // avoid for loop so this function can be inlined
 	}
 

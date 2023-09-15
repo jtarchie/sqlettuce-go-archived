@@ -30,17 +30,19 @@ var _ = Describe("Integer", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(intValue).To(BeEquivalentTo(11))
 
-		value, err := client.Get(context.Background(), "key")
+		value, found, err := client.Get(context.Background(), "key")
 		Expect(err).NotTo(HaveOccurred())
-		Expect(*value).To(Equal("11"))
+		Expect(found).To(BeTrue())
+		Expect(value).To(Equal("11"))
 
 		intValue, err = client.AddInt(context.Background(), "key", -1)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(intValue).To(BeEquivalentTo(10))
 
-		value, err = client.Get(context.Background(), "key")
+		value, found, err = client.Get(context.Background(), "key")
 		Expect(err).NotTo(HaveOccurred())
-		Expect(*value).To(Equal("10"))
+		Expect(found).To(BeTrue())
+		Expect(value).To(Equal("10"))
 	})
 
 	When("the value is non integer string", func() {

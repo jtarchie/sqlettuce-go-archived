@@ -30,9 +30,10 @@ var _ = Describe("Flush", func() {
 			err = client.FlushAll()
 			Expect(err).NotTo(HaveOccurred())
 
-			value, err := client.Get(context.TODO(), "key")
+			value, found, err := client.Get(context.TODO(), "key")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(value).To(BeNil())
+			Expect(found).To(BeFalse())
+			Expect(value).To(Equal(""))
 		})
 	})
 })

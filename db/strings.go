@@ -22,37 +22,35 @@ func (c *Client) Set(ctx context.Context, name, value string) error {
 	return nil
 }
 
-func (c *Client) Get(ctx context.Context, name string) (*string, error) {
+func (c *Client) Get(ctx context.Context, name string) (string, bool, error) {
 	value, err := c.readers.Get(ctx, name)
 
-	//nolint:nilnil
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, nil
+		return "", false, nil
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("could not GET: %w", err)
+		return "", false, fmt.Errorf("could not GET: %w", err)
 	}
 
-	return &value, nil
+	return value, true, nil
 }
 
-func (c *Client) Delete(ctx context.Context, name string) (*string, error) {
+func (c *Client) Delete(ctx context.Context, name string) (string, bool, error) {
 	value, err := c.writers.Delete(ctx, name)
 
-	//nolint:nilnil
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, nil
+		return "", false, nil
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("could not DELETE: %w", err)
+		return "", false, fmt.Errorf("could not DELETE: %w", err)
 	}
 
-	return &value, nil
+	return value, true, nil
 }
 
-func (c *Client) Append(ctx context.Context, name, value string) (int, error) {
+func (c *Client) Append(ctx context.Context, name, value string) (int64, error) {
 	length, err := c.writers.Append(ctx, writers.AppendParams{
 		Name:  name,
 		Value: value,
@@ -61,7 +59,7 @@ func (c *Client) Append(ctx context.Context, name, value string) (int, error) {
 		return 0, fmt.Errorf("could not APPEND: %w", err)
 	}
 
-	return int(length.Int64), nil
+	return length.Int64, nil
 }
 
 func (c *Client) Substr(ctx context.Context, name string, start, end int64) (string, error) {
