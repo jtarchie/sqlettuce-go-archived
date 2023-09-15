@@ -10,7 +10,7 @@ import (
 	"github.com/jtarchie/sqlettus/db"
 )
 
-//nolint:funlen
+//nolint:funlen,cyclop
 func New(
 	ctx context.Context,
 	client *db.Client,
@@ -43,6 +43,26 @@ func New(
 			_, err = io.WriteString(conn, OKResponse)
 			if err != nil {
 				return fmt.Errorf("could not send reply: %w", err)
+			}
+
+			return nil
+		}),
+		"DEL": minMaxTokens(1, 0, func(tokens []string, conn io.Writer) error {
+			count := 0
+
+			for _, name := range tokens[1:] {
+				err := client.Delete(ctx, name)
+				if err != nil {
+					_ = writeInt(conn, count)
+
+					return fmt.Errorf("could not execute all DEL: %w", err)
+				}
+				count++
+			}
+
+			err := writeInt(conn, count)
+			if err != nil {
+				return fmt.Errorf("could not execute DEL: %w", err)
 			}
 
 			return nil
@@ -85,6 +105,25 @@ func New(
 	}
 }
 
+func writeInt(conn io.Writer, value int) error {
+	_, _ = io.WriteString(conn, ":")
+
+	if value < 0 {
+		_, _ = io.WriteString(conn, "-")
+	} else {
+		_, _ = io.WriteString(conn, "+")
+	}
+
+	_, _ = io.WriteString(conn, strconv.Itoa(value))
+
+	_, err := io.WriteString(conn, "\r\n")
+	if err != nil {
+		return fmt.Errorf("could not send int: %w", err)
+	}
+
+	return nil
+}
+
 func writeBulkString(conn io.Writer, value string) error {
 	_, _ = conn.Write([]byte("$"))
 	_, _ = io.WriteString(conn, strconv.Itoa(len(value)))
@@ -93,7 +132,7 @@ func writeBulkString(conn io.Writer, value string) error {
 
 	_, err := io.WriteString(conn, "\r\n")
 	if err != nil {
-		return fmt.Errorf("could not send reply: %w", err)
+		return fmt.Errorf("could not send bulk string: %w", err)
 	}
 
 	return nil

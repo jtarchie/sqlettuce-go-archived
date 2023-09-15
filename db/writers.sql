@@ -6,3 +6,6 @@ SET value = excluded.value;
 
 -- name: FlushAll :exec
 DELETE FROM strings;
+
+-- name: Delete :exec
+DELETE FROM strings WHERE name = @name;

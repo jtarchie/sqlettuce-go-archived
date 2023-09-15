@@ -9,6 +9,15 @@ import (
 	"context"
 )
 
+const delete = `-- name: Delete :exec
+DELETE FROM strings WHERE name = ?1
+`
+
+func (q *Queries) Delete(ctx context.Context, name string) error {
+	_, err := q.exec(ctx, q.deleteStmt, delete, name)
+	return err
+}
+
 const flushAll = `-- name: FlushAll :exec
 DELETE FROM strings
 `

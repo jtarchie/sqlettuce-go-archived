@@ -24,6 +24,10 @@ var _ = Describe("Client", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
+	AfterEach(func() {
+		client.Close()
+	})
+
 	When("Set", func() {
 		It("sets a value", func() {
 			err := client.Set(context.TODO(), "key", "value")
@@ -32,6 +36,33 @@ var _ = Describe("Client", func() {
 			value, err := client.Get(context.TODO(), "key")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(*value).To(Equal("value"))
+		})
+	})
+
+	When("Get", func() {
+		It("return nil with non existent keys", func() {
+			value, err := client.Get(context.TODO(), "key")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(value).To(BeNil())
+		})
+	})
+
+	When("Delete", func() {
+		It("can delete a value", func() {
+			err := client.Set(context.TODO(), "key", "value")
+			Expect(err).NotTo(HaveOccurred())
+
+			err = client.Delete(context.TODO(), "key")
+			Expect(err).NotTo(HaveOccurred())
+
+			value, err := client.Get(context.TODO(), "key")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(value).To(BeNil())
+		})
+
+		It("does not fail on missing value", func() {
+			err := client.Delete(context.TODO(), "key")
+			Expect(err).NotTo(HaveOccurred())
 		})
 	})
 

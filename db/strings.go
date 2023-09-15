@@ -35,3 +35,12 @@ func (c *Client) Get(ctx context.Context, name string) (*string, error) {
 
 	return &value, nil
 }
+
+func (c *Client) Delete(ctx context.Context, name string) error {
+	err := c.writers.Delete(ctx, name)
+	if err != nil {
+		return fmt.Errorf("could not DELETE: %w", err)
+	}
+
+	return nil
+}

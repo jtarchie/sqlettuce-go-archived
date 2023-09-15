@@ -19,6 +19,7 @@ func (t *tokensLimits) Lookup(tokens []string) (Callback, error) {
 	return t.callback, nil
 }
 
+//nolint:unparam
 func minMaxTokens(min, max int, callback Callback) *tokensLimits {
 	return &tokensLimits{
 		min:      min,

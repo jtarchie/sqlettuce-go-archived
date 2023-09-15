@@ -82,9 +82,21 @@ func NewClient(filename string) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) Close() {
-	c.readers.Close()
-	c.writers.Close()
+func (c *Client) Close() error {
+	err := c.readers.Close()
+	if err != nil {
+		return fmt.Errorf("could not close readers: %w", err)
+	}
 
-	c.db.Close()
+	err = c.writers.Close()
+	if err != nil {
+		return fmt.Errorf("could not close writers: %w", err)
+	}
+
+	err = c.db.Close()
+	if err != nil {
+		return fmt.Errorf("could not close db: %w", err)
+	}
+
+	return nil
 }
