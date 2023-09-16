@@ -12,6 +12,25 @@ import (
 	"github.com/jtarchie/sqlettus/router"
 )
 
+func strlenRouter(
+	ctx context.Context,
+	client *db.Client,
+) router.Router {
+	return router.MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
+		value, _, err := client.Get(ctx, tokens[1])
+		if err != nil {
+			return fmt.Errorf("could not execute GET: %w", err)
+		}
+
+		err = writeInt(conn, int64(len(value)))
+		if err != nil {
+			return fmt.Errorf("could not send reply: %w", err)
+		}
+
+		return nil
+	})
+}
+
 func echoRouter() router.Router {
 	return router.MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
 		err := writeBulkString(conn, tokens[1])

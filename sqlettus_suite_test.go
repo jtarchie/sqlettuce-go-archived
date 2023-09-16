@@ -133,6 +133,16 @@ var _ = Describe("CLI", func() {
 		intVal, err = client.Unlink(context.TODO(), "key1", "key2", "key3").Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(intVal).To(BeEquivalentTo(2))
+
+		set(client, "mykey", "Hello world")
+
+		intVal, err = client.StrLen(context.TODO(), "mykey").Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(intVal).To(BeEquivalentTo(11))
+
+		intVal, err = client.StrLen(context.TODO(), "nonexisting").Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(intVal).To(BeEquivalentTo(0))
 	})
 })
 
