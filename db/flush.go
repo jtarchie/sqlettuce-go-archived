@@ -5,8 +5,8 @@ import (
 	"fmt"
 )
 
-func (c *Client) FlushAll() error {
-	err := c.writers.FlushAll(context.Background())
+func (c *Client) FlushAll(ctx context.Context) error {
+	err := c.writers.FlushAll(ctx)
 	if err != nil {
 		return fmt.Errorf("could not flush all: %w", err)
 	}

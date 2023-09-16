@@ -27,7 +27,7 @@ var _ = Describe("Flush", func() {
 			err := client.Set(context.TODO(), "key", "value")
 			Expect(err).NotTo(HaveOccurred())
 
-			err = client.FlushAll()
+			err = client.FlushAll(context.TODO())
 			Expect(err).NotTo(HaveOccurred())
 
 			value, found, err := client.Get(context.TODO(), "key")
