@@ -76,6 +76,26 @@ func NewRoutes(
 
 			return nil
 		}),
+		"MSET": router.MinMaxTokensRouter(2, 0, func(tokens []string, conn io.Writer) error {
+			if len(tokens[1:])%2 != 0 {
+				// require even number of tokens for key-value pairs
+				_, _ = io.WriteString(conn, "-Expected key-value pair, not enough tokens\r\n")
+
+				return fmt.Errorf("require even number of tokens: %w", ErrIncorrectTokens)
+			}
+
+			err := client.MSet(ctx, tokens[1:]...)
+			if err != nil {
+				return fmt.Errorf("could not execute MST: %w", err)
+			}
+
+			_, err = io.WriteString(conn, router.OKResponse)
+			if err != nil {
+				return fmt.Errorf("could not send reply: %w", err)
+			}
+
+			return nil
+		}),
 		"GET": router.MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
 			value, found, err := client.Get(ctx, tokens[1])
 			if err != nil {

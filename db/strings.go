@@ -22,6 +22,35 @@ func (c *Client) Set(ctx context.Context, name, value string) error {
 	return nil
 }
 
+func (c *Client) MSet(ctx context.Context, args ...string) error {
+	transaction, err := c.db.Begin()
+	if err != nil {
+		return fmt.Errorf("could not start MSET: %w", err)
+	}
+	//nolint:errcheck
+	defer transaction.Rollback()
+
+	queries := c.writers.WithTx(transaction)
+	params := &writers.SetParams{}
+
+	for index := 0; index < len(args); index += 2 {
+		params.Name = args[index]
+		params.Value = args[index+1]
+
+		err := queries.Set(ctx, params)
+		if err != nil {
+			return fmt.Errorf("could not set MSET: %w", err)
+		}
+	}
+
+	err = transaction.Commit()
+	if err != nil {
+		return fmt.Errorf("could not MSET: %w", err)
+	}
+
+	return nil
+}
+
 func (c *Client) Get(ctx context.Context, name string) (string, bool, error) {
 	value, err := c.readers.Get(ctx, name)
 

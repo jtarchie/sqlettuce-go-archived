@@ -34,6 +34,26 @@ var _ = Describe("Strings", func() {
 		})
 	})
 
+	When("MSet", func() {
+		It("can set multiple values", func() {
+			err := client.MSet(context.TODO(),
+				"key", "value",
+				"key1", "value1",
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			value, found, err := client.Get(context.TODO(), "key")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(found).To(BeTrue())
+			Expect(value).To(Equal("value"))
+
+			value, found, err = client.Get(context.TODO(), "key1")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(found).To(BeTrue())
+			Expect(value).To(Equal("value1"))
+		})
+	})
+
 	When("Get", func() {
 		It("return nil with non existent keys", func() {
 			value, found, err := client.Get(context.TODO(), "key")

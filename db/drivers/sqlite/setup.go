@@ -17,28 +17,6 @@ import (
 //go:embed migrations/*.sql
 var migrations embed.FS
 
-type Reader interface {
-	readers.Querier
-	Close() error
-}
-
-type Writer interface {
-	writers.Querier
-	Close() error
-}
-
-type Batcher interface {
-	batch.Querier
-}
-
-type Driver struct {
-	DB *sql.DB
-
-	Readers Reader
-	Writers Writer
-	Batcher Batcher
-}
-
 func New(dsn string) (*Driver, error) {
 	writerDB, err := sql.Open(driverName, dsn)
 	if err != nil {
@@ -87,8 +65,8 @@ func New(dsn string) (*Driver, error) {
 
 	return &Driver{
 		DB:      writerDB,
-		Readers: readers.New(writerDB),
-		Writers: writers.New(writerDB),
-		Batcher: batch.New(writerDB),
+		Readers: &Readers{readers.New(writerDB)},
+		Writers: &Writers{writers.New(writerDB)},
+		Batcher: &Batches{batch.New(writerDB)},
 	}, nil
 }

@@ -45,32 +45,32 @@ var _ = Describe("CLI", func() {
 		})
 
 		By("Sending PING message")
-		value, err := client.Ping(context.Background()).Result()
+		strValue, err := client.Ping(context.Background()).Result()
 		Expect(err).NotTo(HaveOccurred())
-		Expect(value).To(Equal("PONG"))
+		Expect(strValue).To(Equal("PONG"))
 
 		By("Sending ECHO message")
-		value, err = client.Echo(context.Background(), "message").Result()
+		strValue, err = client.Echo(context.Background(), "message").Result()
 		Expect(err).NotTo(HaveOccurred())
-		Expect(value).To(Equal("message"))
+		Expect(strValue).To(Equal("message"))
 
 		By("Reset the whole database")
-		value, err = client.FlushAll(context.Background()).Result()
+		strValue, err = client.FlushAll(context.Background()).Result()
 		Expect(err).NotTo(HaveOccurred())
-		Expect(value).To(Equal("OK"))
+		Expect(strValue).To(Equal("OK"))
 
-		value, err = client.FlushDB(context.Background()).Result()
+		strValue, err = client.FlushDB(context.Background()).Result()
 		Expect(err).NotTo(HaveOccurred())
-		Expect(value).To(Equal("OK"))
+		Expect(strValue).To(Equal("OK"))
 
 		By("Set a value")
-		value, err = client.Set(context.Background(), "name", "hello", time.Hour).Result()
+		strValue, err = client.Set(context.Background(), "name", "hello", time.Hour).Result()
 		Expect(err).NotTo(HaveOccurred())
-		Expect(value).To(Equal("OK"))
+		Expect(strValue).To(Equal("OK"))
 
-		value, err = client.Get(context.Background(), "name").Result()
+		strValue, err = client.Get(context.Background(), "name").Result()
 		Expect(err).NotTo(HaveOccurred())
-		Expect(value).To(Equal("hello"))
+		Expect(strValue).To(Equal("hello"))
 
 		intVal, err := client.Append(context.Background(), "name", " world").Result()
 		Expect(err).NotTo(HaveOccurred())
@@ -81,9 +81,9 @@ var _ = Describe("CLI", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(intVal).To(BeEquivalentTo(1))
 
-		value, err = client.Get(context.Background(), "name").Result()
+		strValue, err = client.Get(context.Background(), "name").Result()
 		Expect(err).To(HaveOccurred())
-		Expect(value).To(Equal(""))
+		Expect(strValue).To(Equal(""))
 
 		By("increment and decrement values")
 		intVal, err = client.Decr(context.Background(), "key").Result()
@@ -102,25 +102,38 @@ var _ = Describe("CLI", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(intVal).To(BeEquivalentTo(-2))
 
-		value, err = client.GetDel(context.Background(), "key").Result()
+		strValue, err = client.GetDel(context.Background(), "key").Result()
 		Expect(err).NotTo(HaveOccurred())
-		Expect(value).To(Equal("-2"))
+		Expect(strValue).To(Equal("-2"))
 
 		set(client, "key", "This is a string")
 
-		value, err = client.GetRange(context.Background(), "key", -3, -1).Result()
+		strValue, err = client.GetRange(context.Background(), "key", -3, -1).Result()
 		Expect(err).NotTo(HaveOccurred())
-		Expect(value).To(Equal("ing"))
+		Expect(strValue).To(Equal("ing"))
 
 		set(client, "mykey", "10.50")
 
 		floatVal, err := client.IncrByFloat(context.Background(), "mykey", 0.1).Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(floatVal).To(BeEquivalentTo(10.6))
+
+		strValue, err = client.MSet(context.TODO(), "key1", "value1", "key2", "value2").Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(strValue).To(Equal("OK"))
+
+		get(client, "key1", "value1")
+		get(client, "key2", "value2")
 	})
 })
 
 func set(client *redis.Client, key, value string) {
 	err := client.Set(context.Background(), key, value, time.Hour).Err()
 	Expect(err).NotTo(HaveOccurred())
+}
+
+func get(client *redis.Client, key, expected string) {
+	actual, err := client.Get(context.Background(), key).Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(expected).To(Equal(actual))
 }
