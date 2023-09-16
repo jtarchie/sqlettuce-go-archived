@@ -129,6 +129,10 @@ var _ = Describe("CLI", func() {
 			nil,
 			"value2",
 		}))
+
+		intVal, err = client.Unlink(context.TODO(), "key1", "key2", "key3").Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(intVal).To(BeEquivalentTo(2))
 	})
 })
 
