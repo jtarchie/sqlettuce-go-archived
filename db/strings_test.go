@@ -55,11 +55,28 @@ var _ = Describe("Strings", func() {
 	})
 
 	When("Get", func() {
-		It("return nil with non existent keys", func() {
+		It("returns not found", func() {
 			value, found, err := client.Get(context.TODO(), "key")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(found).To(BeFalse())
 			Expect(value).To(Equal(""))
+		})
+	})
+
+	When("MGet", func() {
+		It("returns values, nil if it does not exist", func() {
+			err := client.MSet(context.TODO(),
+				"key1", "value1",
+				"key2", "value2",
+			)
+			Expect(err).NotTo(HaveOccurred())
+
+			values, err := client.MGet(context.TODO(), "key1", "key3", "key2")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(values).To(HaveLen(3))
+			Expect(values).To(Equal([]string{
+				"value1", "", "value2",
+			}))
 		})
 	})
 

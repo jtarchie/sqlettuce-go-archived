@@ -122,8 +122,13 @@ var _ = Describe("CLI", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(strValue).To(Equal("OK"))
 
-		get(client, "key1", "value1")
-		get(client, "key2", "value2")
+		values, err := client.MGet(context.TODO(), "key1", "key3", "key2").Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(values).To(Equal([]interface{}{
+			"value1",
+			nil,
+			"value2",
+		}))
 	})
 })
 
@@ -132,8 +137,8 @@ func set(client *redis.Client, key, value string) {
 	Expect(err).NotTo(HaveOccurred())
 }
 
-func get(client *redis.Client, key, expected string) {
-	actual, err := client.Get(context.Background(), key).Result()
-	Expect(err).NotTo(HaveOccurred())
-	Expect(expected).To(Equal(actual))
-}
+// func get(client *redis.Client, key, expected string) {
+// 	actual, err := client.Get(context.Background(), key).Result()
+// 	Expect(err).NotTo(HaveOccurred())
+// 	Expect(expected).To(Equal(actual))
+// }

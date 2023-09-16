@@ -10,6 +10,7 @@ import (
 
 type Querier interface {
 	Delete(ctx context.Context, names []string) ([]string, error)
+	Get(ctx context.Context, names []string) ([]Key, error)
 }
 
 var _ Querier = (*Queries)(nil)

@@ -46,3 +46,40 @@ func (q *Queries) Delete(ctx context.Context, names []string) ([]string, error) 
 	}
 	return items, nil
 }
+
+const get = `-- name: Get :many
+SELECT name, value FROM keys WHERE name IN (/*SLICE:names*/?)
+`
+
+func (q *Queries) Get(ctx context.Context, names []string) ([]Key, error) {
+	query := get
+	var queryParams []interface{}
+	if len(names) > 0 {
+		for _, v := range names {
+			queryParams = append(queryParams, v)
+		}
+		query = strings.Replace(query, "/*SLICE:names*/?", strings.Repeat(",?", len(names))[1:], 1)
+	} else {
+		query = strings.Replace(query, "/*SLICE:names*/?", "NULL", 1)
+	}
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Key
+	for rows.Next() {
+		var i Key
+		if err := rows.Scan(&i.Name, &i.Value); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

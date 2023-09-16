@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/jtarchie/sqlettus/db/drivers/sqlite/readers"
 	"github.com/jtarchie/sqlettus/db/drivers/sqlite/writers"
@@ -63,6 +64,30 @@ func (c *Client) Get(ctx context.Context, name string) (string, bool, error) {
 	}
 
 	return value, true, nil
+}
+
+func (c *Client) MGet(ctx context.Context, names ...string) ([]string, error) {
+	results, err := c.batcher.Get(ctx, names)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("could not MGET: %w", err)
+	}
+
+	values := make([]string, len(names))
+
+	for _, result := range results {
+		index := slices.Index(names, result.Name)
+
+		if index >= 0 {
+			values[index] = result.Value
+		}
+	}
+
+	return values, nil
 }
 
 func (c *Client) Delete(ctx context.Context, names ...string) ([]string, bool, error) {

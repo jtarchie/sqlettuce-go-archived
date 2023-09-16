@@ -118,6 +118,28 @@ func NewRoutes(
 
 			return nil
 		}),
+		"MGET": router.MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
+			values, err := client.MGet(ctx, tokens[1:]...)
+			if err != nil {
+				return fmt.Errorf("could not execute GET: %w", err)
+			}
+
+			_, _ = conn.Write([]byte(fmt.Sprintf("*%d\r\n", len(values))))
+
+			for _, value := range values {
+				if value == "" {
+					_, err = io.WriteString(conn, router.NullResponse)
+				} else {
+					err = writeBulkString(conn, value)
+				}
+
+				if err != nil {
+					return fmt.Errorf("could not write value: %w", err)
+				}
+			}
+
+			return nil
+		}),
 		"GETDEL": router.MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
 			values, found, err := client.Delete(ctx, tokens[1])
 			if err != nil {
