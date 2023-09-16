@@ -10,6 +10,27 @@ import (
 	"database/sql"
 )
 
+const addFloat = `-- name: AddFloat :one
+INSERT INTO keys (name, value)
+VALUES (?1, ?2) ON CONFLICT(name) DO
+UPDATE
+SET value = CAST(value AS REAL) + CAST(excluded.value AS REAL)
+WHERE printf("%.17f", value) GLOB SUBSTRING(value, 1, 1) || '*'
+RETURNING CAST(value AS REAL)
+`
+
+type AddFloatParams struct {
+	Name  string
+	Value string
+}
+
+func (q *Queries) AddFloat(ctx context.Context, arg AddFloatParams) (float64, error) {
+	row := q.queryRow(ctx, q.addFloatStmt, addFloat, arg.Name, arg.Value)
+	var value float64
+	err := row.Scan(&value)
+	return value, err
+}
+
 const addInt = `-- name: AddInt :one
 INSERT INTO keys (name, value)
 VALUES (?1, ?2) ON CONFLICT(name) DO

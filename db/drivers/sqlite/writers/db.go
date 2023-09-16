@@ -24,6 +24,9 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
+	if q.addFloatStmt, err = db.PrepareContext(ctx, addFloat); err != nil {
+		return nil, fmt.Errorf("error preparing query AddFloat: %w", err)
+	}
 	if q.addIntStmt, err = db.PrepareContext(ctx, addInt); err != nil {
 		return nil, fmt.Errorf("error preparing query AddInt: %w", err)
 	}
@@ -44,6 +47,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 
 func (q *Queries) Close() error {
 	var err error
+	if q.addFloatStmt != nil {
+		if cerr := q.addFloatStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing addFloatStmt: %w", cerr)
+		}
+	}
 	if q.addIntStmt != nil {
 		if cerr := q.addIntStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing addIntStmt: %w", cerr)
@@ -108,6 +116,7 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 type Queries struct {
 	db           DBTX
 	tx           *sql.Tx
+	addFloatStmt *sql.Stmt
 	addIntStmt   *sql.Stmt
 	appendStmt   *sql.Stmt
 	deleteStmt   *sql.Stmt
@@ -119,6 +128,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
 		db:           tx,
 		tx:           tx,
+		addFloatStmt: q.addFloatStmt,
 		addIntStmt:   q.addIntStmt,
 		appendStmt:   q.appendStmt,
 		deleteStmt:   q.deleteStmt,

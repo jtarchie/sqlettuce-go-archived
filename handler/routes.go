@@ -206,6 +206,26 @@ func NewRoutes(
 
 			return nil
 		}),
+		"INCRBYFLOAT": router.MinMaxTokensRouter(2, 0, func(tokens []string, conn io.Writer) error {
+			value, err := strconv.ParseFloat(tokens[2], 64)
+			if err != nil {
+				_, _ = io.WriteString(conn, "-Expected float value to increment\r\n")
+
+				return fmt.Errorf("could not parse float: %w", err)
+			}
+
+			value, err = client.AddFloat(ctx, tokens[1], value)
+			if err != nil {
+				return fmt.Errorf("could not execute INCRBYFLOAT: %w", err)
+			}
+
+			err = writeFloat(conn, value)
+			if err != nil {
+				return fmt.Errorf("could not write value: %w", err)
+			}
+
+			return nil
+		}),
 		"GETRANGE": router.MinMaxTokensRouter(3, 0, func(tokens []string, conn io.Writer) error {
 			start, _ := strconv.Atoi(tokens[2])
 			end, _ := strconv.Atoi(tokens[3])
@@ -227,6 +247,18 @@ func NewRoutes(
 	commands["FLUSHDB"] = commands["FLUSHALL"]
 
 	return commands
+}
+
+func writeFloat(conn io.Writer, value float64) error {
+	_, _ = io.WriteString(conn, ",")
+	_, _ = io.WriteString(conn, strconv.FormatFloat(value, 'f', 17, 64))
+
+	_, err := io.WriteString(conn, "\r\n")
+	if err != nil {
+		return fmt.Errorf("could not send int: %w", err)
+	}
+
+	return nil
 }
 
 func writeInt(conn io.Writer, value int64) error {

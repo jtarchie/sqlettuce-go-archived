@@ -111,6 +111,12 @@ var _ = Describe("CLI", func() {
 		value, err = client.GetRange(context.Background(), "key", -3, -1).Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(value).To(Equal("ing"))
+
+		set(client, "mykey", "10.50")
+
+		floatVal, err := client.IncrByFloat(context.Background(), "mykey", 0.1).Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(floatVal).To(BeEquivalentTo(10.6))
 	})
 })
 
