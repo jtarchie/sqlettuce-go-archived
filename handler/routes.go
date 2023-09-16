@@ -41,6 +41,7 @@ func NewRoutes(
 	}
 
 	commands["FLUSHDB"] = commands["FLUSHALL"]
+	commands["SUBSTR"] = commands["GETRANGE"]
 	commands["UNLINK"] = commands["DEL"]
 
 	return commands
