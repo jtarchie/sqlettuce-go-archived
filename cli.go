@@ -10,9 +10,9 @@ import (
 )
 
 type CLI struct {
-	Port     uint   `default:"6379"    help:"port to listen on"`
-	Filename string `default:"test.db" help:"filename to store database"`
-	Workers  uint   `default:"100"     help:"number of workers to run"`
+	Port     uint   `default:"6379"             help:"port to listen on"`
+	Filename string `default:"sqlite://test.db" help:"filename to store database"`
+	Workers  uint   `default:"100"              help:"number of workers to run"`
 }
 
 func (c *CLI) Run() error {
