@@ -82,7 +82,7 @@ var _ = Describe("CLI", func() {
 		Expect(intVal).To(BeEquivalentTo(1))
 
 		value, err = client.Get(context.Background(), "name").Result()
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).To(HaveOccurred())
 		Expect(value).To(Equal(""))
 
 		By("increment and decrement values")

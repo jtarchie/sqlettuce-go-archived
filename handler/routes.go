@@ -18,11 +18,11 @@ func NewRoutes(
 ) router.Command {
 	commands := router.Command{
 		"COMMAND": router.Command{
-			"DOCS": router.StaticResponseRouter("+\r\n"),
+			"DOCS": router.StaticResponseRouter(router.EmptyStringResponse),
 		},
 		"CONFIG": router.Command{
 			"GET": router.Command{
-				"save":       router.StaticResponseRouter("+\r\n"),
+				"save":       router.StaticResponseRouter(router.EmptyStringResponse),
 				"appendonly": router.StaticResponseRouter("+no\r\n"),
 			},
 		},
@@ -90,7 +90,7 @@ func NewRoutes(
 			}
 
 			if !found {
-				_, err = io.WriteString(conn, "+\r\n")
+				_, err = io.WriteString(conn, router.NullResponse)
 				if err != nil {
 					return fmt.Errorf("could not send reply: %w", err)
 				}
@@ -112,7 +112,7 @@ func NewRoutes(
 			}
 
 			if !found {
-				_, err = io.WriteString(conn, "+\r\n")
+				_, err = io.WriteString(conn, router.NullResponse)
 				if err != nil {
 					return fmt.Errorf("could not send reply: %w", err)
 				}
