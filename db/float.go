@@ -9,7 +9,7 @@ import (
 )
 
 func (c *Client) AddFloat(ctx context.Context, name string, value float64) (float64, error) {
-	newValue, err := c.writers.AddFloat(ctx, writers.AddFloatParams{
+	newValue, err := c.writers.AddFloat(ctx, &writers.AddFloatParams{
 		Name:  name,
 		Value: strconv.FormatFloat(value, 'f', 17, 64),
 	})

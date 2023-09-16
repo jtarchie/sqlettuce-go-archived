@@ -42,7 +42,7 @@ type SubstrParams struct {
 	Name  string
 }
 
-func (q *Queries) Substr(ctx context.Context, arg SubstrParams) (string, error) {
+func (q *Queries) Substr(ctx context.Context, arg *SubstrParams) (string, error) {
 	row := q.queryRow(ctx, q.substrStmt, substr, arg.Start, arg.End, arg.Name)
 	var substr string
 	err := row.Scan(&substr)

@@ -24,7 +24,7 @@ type AddFloatParams struct {
 	Value string
 }
 
-func (q *Queries) AddFloat(ctx context.Context, arg AddFloatParams) (float64, error) {
+func (q *Queries) AddFloat(ctx context.Context, arg *AddFloatParams) (float64, error) {
 	row := q.queryRow(ctx, q.addFloatStmt, addFloat, arg.Name, arg.Value)
 	var value float64
 	err := row.Scan(&value)
@@ -45,7 +45,7 @@ type AddIntParams struct {
 	Value string
 }
 
-func (q *Queries) AddInt(ctx context.Context, arg AddIntParams) (int64, error) {
+func (q *Queries) AddInt(ctx context.Context, arg *AddIntParams) (int64, error) {
 	row := q.queryRow(ctx, q.addIntStmt, addInt, arg.Name, arg.Value)
 	var value int64
 	err := row.Scan(&value)
@@ -64,7 +64,7 @@ type AppendParams struct {
 	Value string
 }
 
-func (q *Queries) Append(ctx context.Context, arg AppendParams) (sql.NullInt64, error) {
+func (q *Queries) Append(ctx context.Context, arg *AppendParams) (sql.NullInt64, error) {
 	row := q.queryRow(ctx, q.appendStmt, append, arg.Name, arg.Value)
 	var length sql.NullInt64
 	err := row.Scan(&length)
@@ -92,7 +92,7 @@ type SetParams struct {
 	Value string
 }
 
-func (q *Queries) Set(ctx context.Context, arg SetParams) error {
+func (q *Queries) Set(ctx context.Context, arg *SetParams) error {
 	_, err := q.exec(ctx, q.setStmt, set, arg.Name, arg.Value)
 	return err
 }

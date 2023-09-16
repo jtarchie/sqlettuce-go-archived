@@ -10,7 +10,7 @@ import (
 
 type Querier interface {
 	Get(ctx context.Context, name string) (string, error)
-	Substr(ctx context.Context, arg SubstrParams) (string, error)
+	Substr(ctx context.Context, arg *SubstrParams) (string, error)
 }
 
 var _ Querier = (*Queries)(nil)

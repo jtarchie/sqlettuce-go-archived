@@ -11,7 +11,7 @@ import (
 )
 
 func (c *Client) Set(ctx context.Context, name, value string) error {
-	err := c.writers.Set(ctx, writers.SetParams{
+	err := c.writers.Set(ctx, &writers.SetParams{
 		Name:  name,
 		Value: value,
 	})
@@ -51,7 +51,7 @@ func (c *Client) Delete(ctx context.Context, names ...string) ([]string, bool, e
 }
 
 func (c *Client) Append(ctx context.Context, name, value string) (int64, error) {
-	length, err := c.writers.Append(ctx, writers.AppendParams{
+	length, err := c.writers.Append(ctx, &writers.AppendParams{
 		Name:  name,
 		Value: value,
 	})
@@ -63,7 +63,7 @@ func (c *Client) Append(ctx context.Context, name, value string) (int64, error) 
 }
 
 func (c *Client) Substr(ctx context.Context, name string, start, end int64) (string, error) {
-	value, err := c.readers.Substr(ctx, readers.SubstrParams{
+	value, err := c.readers.Substr(ctx, &readers.SubstrParams{
 		Name:  name,
 		Start: start,
 		End:   end,
