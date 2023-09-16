@@ -18,3 +18,11 @@ sql:
         out: "db/drivers/sqlite/writers"
         emit_prepared_queries: true
         emit_interface: true
+  - engine: "sqlite"
+    queries: "db/drivers/sqlite/batch.sql"
+    schema: "db/drivers/sqlite/migrations"
+    gen:
+      go:
+        package: "batch"
+        out: "db/drivers/sqlite/batch"
+        emit_interface: true

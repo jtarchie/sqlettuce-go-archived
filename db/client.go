@@ -14,6 +14,7 @@ type Client struct {
 
 	readers sqlite.Reader
 	writers sqlite.Writer
+	batcher sqlite.Batcher
 }
 
 var ErrDriverNotFound = errors.New("could not find driver")
@@ -35,6 +36,7 @@ func NewClient(dsn string) (*Client, error) {
 			db:      driver.DB,
 			readers: driver.Readers,
 			writers: driver.Writers,
+			batcher: driver.Batcher,
 		}, nil
 	default:
 		return nil, fmt.Errorf("could not find a driver for %q: %w", uri.Scheme, ErrDriverNotFound)

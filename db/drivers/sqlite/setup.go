@@ -9,6 +9,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
+	"github.com/jtarchie/sqlettus/db/drivers/sqlite/batch"
 	"github.com/jtarchie/sqlettus/db/drivers/sqlite/readers"
 	"github.com/jtarchie/sqlettus/db/drivers/sqlite/writers"
 )
@@ -26,11 +27,16 @@ type Writer interface {
 	Close() error
 }
 
+type Batcher interface {
+	batch.Querier
+}
+
 type Driver struct {
 	DB *sql.DB
 
 	Readers Reader
 	Writers Writer
+	Batcher Batcher
 }
 
 func New(dsn string) (*Driver, error) {
@@ -83,5 +89,6 @@ func New(dsn string) (*Driver, error) {
 		DB:      writerDB,
 		Readers: readers.New(writerDB),
 		Writers: writers.New(writerDB),
+		Batcher: batch.New(writerDB),
 	}, nil
 }

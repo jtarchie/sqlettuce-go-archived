@@ -49,21 +49,14 @@ func NewRoutes(
 			return nil
 		}),
 		"DEL": router.MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
-			count := int64(0)
+			values, _, err := client.Delete(ctx, tokens[1:]...)
+			if err != nil {
+				_ = writeInt(conn, int64(len(values)))
 
-			for _, name := range tokens[1:] {
-				_, found, err := client.Delete(ctx, name)
-				if err != nil {
-					_ = writeInt(conn, count)
-
-					return fmt.Errorf("could not execute all DEL: %w", err)
-				}
-				if found {
-					count++
-				}
+				return fmt.Errorf("could not execute all DEL: %w", err)
 			}
 
-			err := writeInt(conn, count)
+			err = writeInt(conn, int64(len(values)))
 			if err != nil {
 				return fmt.Errorf("could not execute DEL: %w", err)
 			}
@@ -106,7 +99,7 @@ func NewRoutes(
 			return nil
 		}),
 		"GETDEL": router.MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
-			value, found, err := client.Delete(ctx, tokens[1])
+			values, found, err := client.Delete(ctx, tokens[1])
 			if err != nil {
 				return fmt.Errorf("could not execute GET: %w", err)
 			}
@@ -120,7 +113,7 @@ func NewRoutes(
 				return nil
 			}
 
-			err = writeBulkString(conn, value)
+			err = writeBulkString(conn, values[0])
 			if err != nil {
 				return fmt.Errorf("could not write value: %w", err)
 			}

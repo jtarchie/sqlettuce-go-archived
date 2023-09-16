@@ -71,17 +71,6 @@ func (q *Queries) Append(ctx context.Context, arg AppendParams) (sql.NullInt64, 
 	return length, err
 }
 
-const delete = `-- name: Delete :one
-DELETE FROM keys WHERE name = ?1 RETURNING value
-`
-
-func (q *Queries) Delete(ctx context.Context, name string) (string, error) {
-	row := q.queryRow(ctx, q.deleteStmt, delete, name)
-	var value string
-	err := row.Scan(&value)
-	return value, err
-}
-
 const flushAll = `-- name: FlushAll :exec
 DELETE FROM keys
 `

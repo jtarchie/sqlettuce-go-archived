@@ -33,9 +33,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.appendStmt, err = db.PrepareContext(ctx, append); err != nil {
 		return nil, fmt.Errorf("error preparing query Append: %w", err)
 	}
-	if q.deleteStmt, err = db.PrepareContext(ctx, delete); err != nil {
-		return nil, fmt.Errorf("error preparing query Delete: %w", err)
-	}
 	if q.flushAllStmt, err = db.PrepareContext(ctx, flushAll); err != nil {
 		return nil, fmt.Errorf("error preparing query FlushAll: %w", err)
 	}
@@ -60,11 +57,6 @@ func (q *Queries) Close() error {
 	if q.appendStmt != nil {
 		if cerr := q.appendStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing appendStmt: %w", cerr)
-		}
-	}
-	if q.deleteStmt != nil {
-		if cerr := q.deleteStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteStmt: %w", cerr)
 		}
 	}
 	if q.flushAllStmt != nil {
@@ -119,7 +111,6 @@ type Queries struct {
 	addFloatStmt *sql.Stmt
 	addIntStmt   *sql.Stmt
 	appendStmt   *sql.Stmt
-	deleteStmt   *sql.Stmt
 	flushAllStmt *sql.Stmt
 	setStmt      *sql.Stmt
 }
@@ -131,7 +122,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		addFloatStmt: q.addFloatStmt,
 		addIntStmt:   q.addIntStmt,
 		appendStmt:   q.appendStmt,
-		deleteStmt:   q.deleteStmt,
 		flushAllStmt: q.flushAllStmt,
 		setStmt:      q.setStmt,
 	}

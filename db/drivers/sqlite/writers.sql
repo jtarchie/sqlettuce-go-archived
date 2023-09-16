@@ -28,6 +28,3 @@ RETURNING CAST(value AS INTEGER);
 
 -- name: FlushAll :exec
 DELETE FROM keys;
-
--- name: Delete :one
-DELETE FROM keys WHERE name = @name RETURNING value;

@@ -13,7 +13,6 @@ type Querier interface {
 	AddFloat(ctx context.Context, arg AddFloatParams) (float64, error)
 	AddInt(ctx context.Context, arg AddIntParams) (int64, error)
 	Append(ctx context.Context, arg AppendParams) (sql.NullInt64, error)
-	Delete(ctx context.Context, name string) (string, error)
 	FlushAll(ctx context.Context) error
 	Set(ctx context.Context, arg SetParams) error
 }

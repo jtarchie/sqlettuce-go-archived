@@ -48,12 +48,12 @@ var _ = Describe("Strings", func() {
 			err := client.Set(context.TODO(), "key", "value")
 			Expect(err).NotTo(HaveOccurred())
 
-			value, found, err := client.Delete(context.TODO(), "key")
+			values, found, err := client.Delete(context.TODO(), "key")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(found).To(BeTrue())
-			Expect(value).To(Equal("value"))
+			Expect(values).To(Equal([]string{"value"}))
 
-			value, found, err = client.Get(context.TODO(), "key")
+			value, found, err := client.Get(context.TODO(), "key")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(found).To(BeFalse())
 			Expect(value).To(Equal(""))
@@ -63,7 +63,7 @@ var _ = Describe("Strings", func() {
 			value, found, err := client.Delete(context.TODO(), "key")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(found).To(BeFalse())
-			Expect(value).To(Equal(""))
+			Expect(value).To(BeEmpty())
 		})
 	})
 
