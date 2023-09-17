@@ -44,14 +44,14 @@ func NewRoutes(
 		"STRLEN":      strlenRouter(ctx, client),
 
 		// deprecated commands, let's not support them
-		"RPOPLPUSH":  router.StaticResponseRouter("-Deprecated command, please use LMOVE with the RIGHT and LEFT"),
-		"BRPOPLPUSH": router.StaticResponseRouter("-Deprecated command, please use LMOVE with the RIGHT and LEFT"),
+		"RPOPLPUSH":  router.StaticResponseRouter("-Deprecated command, please use LMOVE with the RIGHT and LEFT\r\n"),
+		"BRPOPLPUSH": router.StaticResponseRouter("-Deprecated command, please use LMOVE with the RIGHT and LEFT\r\n"),
 
-		"GETSET": router.StaticResponseRouter("-Deprecated command, please use SET with the GET argument"),
-		"PSETEX": router.StaticResponseRouter("-Deprecated command, please use SET with the PX argument"),
-		"SETEX":  router.StaticResponseRouter("-Deprecated command, please use SET with the EX argument"),
-		"SETNX":  router.StaticResponseRouter("-Deprecated command, please use SET with the NX argument"),
-		"SUBSTR": router.StaticResponseRouter("-Deprecated command, please use GETRANGE"),
+		"GETSET": router.StaticResponseRouter("-Deprecated command, please use SET with the GET argument\r\n"),
+		"PSETEX": router.StaticResponseRouter("-Deprecated command, please use SET with the PX argument\r\n"),
+		"SETEX":  router.StaticResponseRouter("-Deprecated command, please use SET with the EX argument\r\n"),
+		"SETNX":  router.StaticResponseRouter("-Deprecated command, please use SET with the NX argument\r\n"),
+		"SUBSTR": router.StaticResponseRouter("-Deprecated command, please use GETRANGE\r\n"),
 	}
 
 	commands["FLUSHDB"] = commands["FLUSHALL"]

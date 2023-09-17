@@ -372,12 +372,19 @@ var _ = Describe("CLI", func() {
 		Expect(values).To(BeEmpty())
 	})
 
-	// It("can start the server", func() {
+	It("had deprecated commands", func() {
+		_, err := client.RPopLPush(context.TODO(), "mylist", "myotherlist").Result()
+		Expect(err).To(MatchError(ContainSubstring("Deprecated")))
 
-	// 	intVal, err = client.RPushX(context.TODO(), "mykey", "two").Result()
-	// 	Expect(err).To(HaveOccurred())
-	// 	Expect(intVal).To(BeEquivalentTo(0))
-	// })
+		_, err = client.BRPopLPush(context.TODO(), "mylist", "myotherlist", time.Hour).Result()
+		Expect(err).To(MatchError(ContainSubstring("Deprecated")))
+
+		_, err = client.GetSet(context.TODO(), "mylist", "myotherlist").Result()
+		Expect(err).To(MatchError(ContainSubstring("Deprecated")))
+
+		_, err = client.SetEx(context.TODO(), "mylist", "myotherlist", time.Hour).Result()
+		Expect(err).To(MatchError(ContainSubstring("Deprecated")))
+	})
 })
 
 func set(client *redis.Client, key, value string) {
