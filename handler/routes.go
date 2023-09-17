@@ -42,8 +42,8 @@ func NewRoutes(
 		"RPUSH":       rpushRouter(ctx, client),
 
 		// deprecated commands, let's not support them
-		"RPOPLPUSH":  router.StaticResponseRouter("-Deprecated command, please use LMOVE"),
-		"BRPOPLPUSH": router.StaticResponseRouter("-Deprecated command, please use LMOVE"),
+		"RPOPLPUSH":  router.StaticResponseRouter("-Deprecated command, please use LMOVE with the RIGHT and LEFT"),
+		"BRPOPLPUSH": router.StaticResponseRouter("-Deprecated command, please use LMOVE with the RIGHT and LEFT"),
 
 		"GETSET": router.StaticResponseRouter("-Deprecated command, please use SET with the GET argument"),
 		"PSETEX": router.StaticResponseRouter("-Deprecated command, please use SET with the PX argument"),
