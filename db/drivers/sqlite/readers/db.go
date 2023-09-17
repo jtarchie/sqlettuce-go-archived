@@ -27,6 +27,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getStmt, err = db.PrepareContext(ctx, get); err != nil {
 		return nil, fmt.Errorf("error preparing query Get: %w", err)
 	}
+	if q.listLengthStmt, err = db.PrepareContext(ctx, listLength); err != nil {
+		return nil, fmt.Errorf("error preparing query ListLength: %w", err)
+	}
 	if q.substrStmt, err = db.PrepareContext(ctx, substr); err != nil {
 		return nil, fmt.Errorf("error preparing query Substr: %w", err)
 	}
@@ -38,6 +41,11 @@ func (q *Queries) Close() error {
 	if q.getStmt != nil {
 		if cerr := q.getStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getStmt: %w", cerr)
+		}
+	}
+	if q.listLengthStmt != nil {
+		if cerr := q.listLengthStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listLengthStmt: %w", cerr)
 		}
 	}
 	if q.substrStmt != nil {
@@ -82,17 +90,19 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db         DBTX
-	tx         *sql.Tx
-	getStmt    *sql.Stmt
-	substrStmt *sql.Stmt
+	db             DBTX
+	tx             *sql.Tx
+	getStmt        *sql.Stmt
+	listLengthStmt *sql.Stmt
+	substrStmt     *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:         tx,
-		tx:         tx,
-		getStmt:    q.getStmt,
-		substrStmt: q.substrStmt,
+		db:             tx,
+		tx:             tx,
+		getStmt:        q.getStmt,
+		listLengthStmt: q.listLengthStmt,
+		substrStmt:     q.substrStmt,
 	}
 }

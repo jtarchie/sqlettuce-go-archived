@@ -77,6 +77,26 @@ func (c *Client) ListRange(ctx context.Context, name string, start, end int64) (
 	return values, nil
 }
 
+var ErrNotFound = errors.New("record was not found")
+
+func (c *Client) ListLength(ctx context.Context, name string) (int64, error) {
+	length, err := c.readers.ListLength(ctx, name)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return 0, nil
+	}
+
+	if err != nil {
+		return 0, fmt.Errorf("could not execute ListSet: %w", err)
+	}
+
+	if value, ok := length.(int64); ok {
+		return value, nil
+	}
+
+	return 0, ErrNotFound
+}
+
 func (c *Client) ListRightPush(ctx context.Context, name, value string) (int64, bool, error) {
 	result, err := c.writers.ListRightPush(ctx, &writers.ListRightPushParams{
 		Name:  name,

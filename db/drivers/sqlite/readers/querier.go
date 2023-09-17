@@ -10,6 +10,7 @@ import (
 
 type Querier interface {
 	Get(ctx context.Context, name string) (string, error)
+	ListLength(ctx context.Context, name string) (interface{}, error)
 	Substr(ctx context.Context, arg *SubstrParams) (string, error)
 }
 

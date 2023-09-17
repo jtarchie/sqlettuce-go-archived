@@ -22,18 +22,31 @@ func (q *Queries) Get(ctx context.Context, name string) (string, error) {
 	return value, err
 }
 
+const listLength = `-- name: ListLength :one
+SELECT json_array_length(value)
+FROM keys
+WHERE name = ?1
+`
+
+func (q *Queries) ListLength(ctx context.Context, name string) (interface{}, error) {
+	row := q.queryRow(ctx, q.listLengthStmt, listLength, name)
+	var json_array_length interface{}
+	err := row.Scan(&json_array_length)
+	return json_array_length, err
+}
+
 const substr = `-- name: Substr :one
 SELECT SUBSTR(
-  value,
-  IIF(?1 < 0,
-    ?1,
-    ?1 + 1
-  ),
-  IIF(?2 < 0,
-    LENGTH(value) - ?2,
-    ?1 + ?2 + 1
+    value,
+    IIF(?1 < 0, ?1, ?1 + 1),
+    IIF(
+      ?2 < 0,
+      LENGTH(value) - ?2,
+      ?1 + ?2 + 1
+    )
   )
-) FROM keys WHERE name = ?3
+FROM keys
+WHERE name = ?3
 `
 
 type SubstrParams struct {

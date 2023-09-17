@@ -51,6 +51,30 @@ var _ = Describe("List", func() {
 		})
 	})
 
+	Describe("ListLength", func() {
+		It("returns a count of number of elements", func() {
+			length, err := client.ListLength(context.Background(), "mylist")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(length).To(BeEquivalentTo(0))
+
+			_, _, _ = client.ListRightPush(context.Background(), "mylist", "Hello")
+			_, _, _ = client.ListRightPush(context.Background(), "mylist", "World")
+
+			length, err = client.ListLength(context.Background(), "mylist")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(length).To(BeEquivalentTo(2))
+		})
+
+		When("value is not an array", func() {
+			It("returns an error", func() {
+				_ = client.Set(context.Background(), "notlist", "string")
+				length, err := client.ListLength(context.Background(), "notlist")
+				Expect(err).To(HaveOccurred())
+				Expect(length).To(BeEquivalentTo(0))
+			})
+		})
+	})
+
 	Describe("ListInsert", func() {
 		It("inserts values at a pivot point", func() {
 			_, _, _ = client.ListRightPush(context.Background(), "mylist", "Hello")
