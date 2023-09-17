@@ -40,10 +40,19 @@ func NewRoutes(
 		"SET":         setRouter(ctx, client),
 		"STRLEN":      strlenRouter(ctx, client),
 		"RPUSH":       rpushRouter(ctx, client),
+
+		// deprecated commands, let's not support them
+		"RPOPLPUSH":  router.StaticResponseRouter("-Deprecated command, please use LMOVE"),
+		"BRPOPLPUSH": router.StaticResponseRouter("-Deprecated command, please use LMOVE"),
+
+		"GETSET": router.StaticResponseRouter("-Deprecated command, please use SET with the GET argument"),
+		"PSETEX": router.StaticResponseRouter("-Deprecated command, please use SET with the PX argument"),
+		"SETEX":  router.StaticResponseRouter("-Deprecated command, please use SET with the EX argument"),
+		"SETNX":  router.StaticResponseRouter("-Deprecated command, please use SET with the NX argument"),
+		"SUBSTR": router.StaticResponseRouter("-Deprecated command, please use GETRANGE"),
 	}
 
 	commands["FLUSHDB"] = commands["FLUSHALL"]
-	commands["SUBSTR"] = commands["GETRANGE"]
 	commands["UNLINK"] = commands["DEL"]
 
 	return commands
