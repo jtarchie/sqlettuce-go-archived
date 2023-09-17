@@ -105,7 +105,7 @@ func (c *Client) Delete(ctx context.Context, names ...string) ([]string, bool, e
 }
 
 func (c *Client) Append(ctx context.Context, name, value string) (int64, error) {
-	length, err := c.writers.Append(ctx, &writers.AppendParams{
+	length, err := c.writers.AppendValue(ctx, &writers.AppendValueParams{
 		Name:  name,
 		Value: value,
 	})

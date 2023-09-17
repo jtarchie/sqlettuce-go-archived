@@ -12,8 +12,10 @@ import (
 type Querier interface {
 	AddFloat(ctx context.Context, arg *AddFloatParams) (float64, error)
 	AddInt(ctx context.Context, arg *AddIntParams) (int64, error)
-	Append(ctx context.Context, arg *AppendParams) (sql.NullInt64, error)
+	AppendValue(ctx context.Context, arg *AppendValueParams) (sql.NullInt64, error)
 	FlushAll(ctx context.Context) error
+	ListRightPush(ctx context.Context, arg *ListRightPushParams) (ListRightPushRow, error)
+	ListSet(ctx context.Context, arg *ListSetParams) (interface{}, error)
 	Set(ctx context.Context, arg *SetParams) error
 }
 

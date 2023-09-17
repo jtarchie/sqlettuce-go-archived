@@ -52,20 +52,21 @@ func (q *Queries) AddInt(ctx context.Context, arg *AddIntParams) (int64, error) 
 	return value, err
 }
 
-const append = `-- name: Append :one
+const appendValue = `-- name: AppendValue :one
 INSERT INTO keys (name, value)
 VALUES (?1, ?2) ON CONFLICT(name) DO
 UPDATE
-SET value = value || excluded.value RETURNING length(value)
+SET value = value || excluded.value
+RETURNING length(value)
 `
 
-type AppendParams struct {
+type AppendValueParams struct {
 	Name  string
 	Value string
 }
 
-func (q *Queries) Append(ctx context.Context, arg *AppendParams) (sql.NullInt64, error) {
-	row := q.queryRow(ctx, q.appendStmt, append, arg.Name, arg.Value)
+func (q *Queries) AppendValue(ctx context.Context, arg *AppendValueParams) (sql.NullInt64, error) {
+	row := q.queryRow(ctx, q.appendValueStmt, appendValue, arg.Name, arg.Value)
 	var length sql.NullInt64
 	err := row.Scan(&length)
 	return length, err
@@ -78,6 +79,60 @@ DELETE FROM keys
 func (q *Queries) FlushAll(ctx context.Context) error {
 	_, err := q.exec(ctx, q.flushAllStmt, flushAll)
 	return err
+}
+
+const listRightPush = `-- name: ListRightPush :one
+INSERT INTO keys (name, value)
+VALUES (?1, json_insert('[]', '$[#]', ?2)) ON CONFLICT(name) DO
+UPDATE
+SET value = json_insert(
+    value,
+    '$[#]',
+    json_extract(excluded.value, '$[0]')
+  )
+RETURNING CAST(json_valid(value) AS boolean) AS valid,
+  CAST(json_array_length(value) AS INTEGER) AS length
+`
+
+type ListRightPushParams struct {
+	Name  string
+	Value interface{}
+}
+
+type ListRightPushRow struct {
+	Column1 bool
+	Column2 int64
+}
+
+func (q *Queries) ListRightPush(ctx context.Context, arg *ListRightPushParams) (ListRightPushRow, error) {
+	row := q.queryRow(ctx, q.listRightPushStmt, listRightPush, arg.Name, arg.Value)
+	var i ListRightPushRow
+	err := row.Scan(&i.Column1, &i.Column2)
+	return i, err
+}
+
+const listSet = `-- name: ListSet :one
+UPDATE keys
+SET value = json_replace(
+    value,
+    '$[' || IIF(?1 >= 0, ?1, '#' || ?1) || ']',
+    ?2
+  )
+WHERE name = ?3
+RETURNING json_valid(value)
+`
+
+type ListSetParams struct {
+	Index interface{}
+	Value interface{}
+	Name  string
+}
+
+func (q *Queries) ListSet(ctx context.Context, arg *ListSetParams) (interface{}, error) {
+	row := q.queryRow(ctx, q.listSetStmt, listSet, arg.Index, arg.Value, arg.Name)
+	var json_valid interface{}
+	err := row.Scan(&json_valid)
+	return json_valid, err
 }
 
 const set = `-- name: Set :exec

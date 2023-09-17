@@ -30,11 +30,17 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.addIntStmt, err = db.PrepareContext(ctx, addInt); err != nil {
 		return nil, fmt.Errorf("error preparing query AddInt: %w", err)
 	}
-	if q.appendStmt, err = db.PrepareContext(ctx, append); err != nil {
-		return nil, fmt.Errorf("error preparing query Append: %w", err)
+	if q.appendValueStmt, err = db.PrepareContext(ctx, appendValue); err != nil {
+		return nil, fmt.Errorf("error preparing query AppendValue: %w", err)
 	}
 	if q.flushAllStmt, err = db.PrepareContext(ctx, flushAll); err != nil {
 		return nil, fmt.Errorf("error preparing query FlushAll: %w", err)
+	}
+	if q.listRightPushStmt, err = db.PrepareContext(ctx, listRightPush); err != nil {
+		return nil, fmt.Errorf("error preparing query ListRightPush: %w", err)
+	}
+	if q.listSetStmt, err = db.PrepareContext(ctx, listSet); err != nil {
+		return nil, fmt.Errorf("error preparing query ListSet: %w", err)
 	}
 	if q.setStmt, err = db.PrepareContext(ctx, set); err != nil {
 		return nil, fmt.Errorf("error preparing query Set: %w", err)
@@ -54,14 +60,24 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing addIntStmt: %w", cerr)
 		}
 	}
-	if q.appendStmt != nil {
-		if cerr := q.appendStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing appendStmt: %w", cerr)
+	if q.appendValueStmt != nil {
+		if cerr := q.appendValueStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing appendValueStmt: %w", cerr)
 		}
 	}
 	if q.flushAllStmt != nil {
 		if cerr := q.flushAllStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing flushAllStmt: %w", cerr)
+		}
+	}
+	if q.listRightPushStmt != nil {
+		if cerr := q.listRightPushStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listRightPushStmt: %w", cerr)
+		}
+	}
+	if q.listSetStmt != nil {
+		if cerr := q.listSetStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listSetStmt: %w", cerr)
 		}
 	}
 	if q.setStmt != nil {
@@ -106,23 +122,27 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db           DBTX
-	tx           *sql.Tx
-	addFloatStmt *sql.Stmt
-	addIntStmt   *sql.Stmt
-	appendStmt   *sql.Stmt
-	flushAllStmt *sql.Stmt
-	setStmt      *sql.Stmt
+	db                DBTX
+	tx                *sql.Tx
+	addFloatStmt      *sql.Stmt
+	addIntStmt        *sql.Stmt
+	appendValueStmt   *sql.Stmt
+	flushAllStmt      *sql.Stmt
+	listRightPushStmt *sql.Stmt
+	listSetStmt       *sql.Stmt
+	setStmt           *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:           tx,
-		tx:           tx,
-		addFloatStmt: q.addFloatStmt,
-		addIntStmt:   q.addIntStmt,
-		appendStmt:   q.appendStmt,
-		flushAllStmt: q.flushAllStmt,
-		setStmt:      q.setStmt,
+		db:                tx,
+		tx:                tx,
+		addFloatStmt:      q.addFloatStmt,
+		addIntStmt:        q.addIntStmt,
+		appendValueStmt:   q.appendValueStmt,
+		flushAllStmt:      q.flushAllStmt,
+		listRightPushStmt: q.listRightPushStmt,
+		listSetStmt:       q.listSetStmt,
+		setStmt:           q.setStmt,
 	}
 }
