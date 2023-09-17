@@ -217,6 +217,8 @@ func decrRouter(
 	return router.MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
 		value, err := client.AddInt(ctx, tokens[1], -1)
 		if err != nil {
+			_ = writeError(conn, "value is not an integer or out of range")
+
 			return fmt.Errorf("could not execute DECR: %w", err)
 		}
 
