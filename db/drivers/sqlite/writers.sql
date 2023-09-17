@@ -34,7 +34,7 @@ SET value = json_replace(
   )
 WHERE name = @name
 RETURNING json_valid(value);
--- name: ListRightPush :one
+-- name: ListRightPushUpsert :one
 INSERT INTO keys (name, value)
 VALUES (@name, json_insert('[]', '$[#]', @value)) ON CONFLICT(name) DO
 UPDATE
@@ -43,5 +43,15 @@ SET value = json_insert(
     '$[#]',
     json_extract(excluded.value, '$[0]')
   )
+RETURNING CAST(json_valid(value) AS boolean) AS valid,
+  CAST(json_array_length(value) AS INTEGER) AS length;
+-- name: ListRightPush :one
+UPDATE keys
+SET value = json_insert(
+    value,
+    '$[#]',
+    @value
+  )
+WHERE name = @name
 RETURNING CAST(json_valid(value) AS boolean) AS valid,
   CAST(json_array_length(value) AS INTEGER) AS length;

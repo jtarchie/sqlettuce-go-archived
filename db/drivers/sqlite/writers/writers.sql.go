@@ -82,6 +82,35 @@ func (q *Queries) FlushAll(ctx context.Context) error {
 }
 
 const listRightPush = `-- name: ListRightPush :one
+UPDATE keys
+SET value = json_insert(
+    value,
+    '$[#]',
+    ?1
+  )
+WHERE name = ?2
+RETURNING CAST(json_valid(value) AS boolean) AS valid,
+  CAST(json_array_length(value) AS INTEGER) AS length
+`
+
+type ListRightPushParams struct {
+	Value interface{}
+	Name  string
+}
+
+type ListRightPushRow struct {
+	Column1 bool
+	Column2 int64
+}
+
+func (q *Queries) ListRightPush(ctx context.Context, arg *ListRightPushParams) (ListRightPushRow, error) {
+	row := q.queryRow(ctx, q.listRightPushStmt, listRightPush, arg.Value, arg.Name)
+	var i ListRightPushRow
+	err := row.Scan(&i.Column1, &i.Column2)
+	return i, err
+}
+
+const listRightPushUpsert = `-- name: ListRightPushUpsert :one
 INSERT INTO keys (name, value)
 VALUES (?1, json_insert('[]', '$[#]', ?2)) ON CONFLICT(name) DO
 UPDATE
@@ -94,19 +123,19 @@ RETURNING CAST(json_valid(value) AS boolean) AS valid,
   CAST(json_array_length(value) AS INTEGER) AS length
 `
 
-type ListRightPushParams struct {
+type ListRightPushUpsertParams struct {
 	Name  string
 	Value interface{}
 }
 
-type ListRightPushRow struct {
+type ListRightPushUpsertRow struct {
 	Column1 bool
 	Column2 int64
 }
 
-func (q *Queries) ListRightPush(ctx context.Context, arg *ListRightPushParams) (ListRightPushRow, error) {
-	row := q.queryRow(ctx, q.listRightPushStmt, listRightPush, arg.Name, arg.Value)
-	var i ListRightPushRow
+func (q *Queries) ListRightPushUpsert(ctx context.Context, arg *ListRightPushUpsertParams) (ListRightPushUpsertRow, error) {
+	row := q.queryRow(ctx, q.listRightPushUpsertStmt, listRightPushUpsert, arg.Name, arg.Value)
+	var i ListRightPushUpsertRow
 	err := row.Scan(&i.Column1, &i.Column2)
 	return i, err
 }

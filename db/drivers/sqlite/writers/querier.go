@@ -15,6 +15,7 @@ type Querier interface {
 	AppendValue(ctx context.Context, arg *AppendValueParams) (sql.NullInt64, error)
 	FlushAll(ctx context.Context) error
 	ListRightPush(ctx context.Context, arg *ListRightPushParams) (ListRightPushRow, error)
+	ListRightPushUpsert(ctx context.Context, arg *ListRightPushUpsertParams) (ListRightPushUpsertRow, error)
 	ListSet(ctx context.Context, arg *ListSetParams) (interface{}, error)
 	Set(ctx context.Context, arg *SetParams) error
 }

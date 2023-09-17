@@ -144,9 +144,13 @@ var _ = Describe("CLI", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(intVal).To(BeEquivalentTo(0))
 
-		intVal, err = client.RPush(context.TODO(), "mylist", "one").Result()
+		intVal, err = client.RPushX(context.TODO(), "mylist", "two").Result()
 		Expect(err).NotTo(HaveOccurred())
-		Expect(intVal).To(BeEquivalentTo(1))
+		Expect(intVal).To(BeEquivalentTo(0))
+
+		intVal, err = client.RPushX(context.TODO(), "mykey", "two").Result()
+		Expect(err).To(HaveOccurred())
+		Expect(intVal).To(BeEquivalentTo(0))
 	})
 })
 

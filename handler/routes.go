@@ -40,6 +40,7 @@ func NewRoutes(
 		"SET":         setRouter(ctx, client),
 		"STRLEN":      strlenRouter(ctx, client),
 		"RPUSH":       rpushRouter(ctx, client),
+		"RPUSHX":      rpushXRouter(ctx, client),
 
 		// deprecated commands, let's not support them
 		"RPOPLPUSH":  router.StaticResponseRouter("-Deprecated command, please use LMOVE with the RIGHT and LEFT"),

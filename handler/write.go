@@ -6,6 +6,18 @@ import (
 	"strconv"
 )
 
+func writeError(conn io.Writer, message string) error {
+	_, _ = io.WriteString(conn, "-")
+	_, _ = io.WriteString(conn, message)
+
+	_, err := io.WriteString(conn, "\r\n")
+	if err != nil {
+		return fmt.Errorf("could not write error: %w", err)
+	}
+
+	return nil
+}
+
 func writeFloat(conn io.Writer, value float64) error {
 	_, _ = io.WriteString(conn, ",")
 	_, _ = io.WriteString(conn, strconv.FormatFloat(value, 'f', 17, 64))

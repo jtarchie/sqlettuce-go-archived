@@ -7,6 +7,12 @@ import (
 	"fmt"
 
 	"github.com/jtarchie/sqlettus/db/drivers/sqlite/writers"
+	sqlite3 "github.com/mattn/go-sqlite3"
+)
+
+var (
+	ErrNotFound = errors.New("record was not found")
+	ErrNotArray = errors.New("not an array")
 )
 
 func (c *Client) ListInsert(
@@ -77,8 +83,6 @@ func (c *Client) ListRange(ctx context.Context, name string, start, end int64) (
 	return values, nil
 }
 
-var ErrNotFound = errors.New("record was not found")
-
 func (c *Client) ListLength(ctx context.Context, name string) (int64, error) {
 	length, err := c.readers.ListLength(ctx, name)
 
@@ -97,10 +101,10 @@ func (c *Client) ListLength(ctx context.Context, name string) (int64, error) {
 	return 0, ErrNotFound
 }
 
-func (c *Client) ListRightPush(ctx context.Context, name string, values ...string) (int64, bool, error) {
+func (c *Client) ListRightPush(ctx context.Context, name string, values ...string) (int64, error) {
 	transaction, err := c.db.Begin()
 	if err != nil {
-		return 0, false, fmt.Errorf("could not start RPUSH: %w", err)
+		return 0, fmt.Errorf("could not start ListRightPush: %w", err)
 	}
 	//nolint:errcheck
 	defer transaction.Rollback()
@@ -114,14 +118,60 @@ func (c *Client) ListRightPush(ctx context.Context, name string, values ...strin
 			Name:  name,
 			Value: value,
 		})
+
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, nil
+		}
+
+		//nolint:errorlint
+		if err, ok := err.(sqlite3.Error); ok && err.Error() == "malformed JSON" {
+			return 0, ErrNotArray
+		}
+
 		if err != nil {
-			return 0, false, fmt.Errorf("could not execute RPUSH: %w", err)
+			return 0, fmt.Errorf("could not execute ListRightPush: %w", err)
 		}
 	}
 
 	err = transaction.Commit()
 	if err != nil {
-		return 0, false, fmt.Errorf("could not RPUSH: %w", err)
+		return 0, fmt.Errorf("could not ListRightPush: %w", err)
+	}
+
+	return result.Column2, nil
+}
+
+func (c *Client) ListRightPushUpsert(ctx context.Context, name string, values ...string) (int64, bool, error) {
+	transaction, err := c.db.Begin()
+	if err != nil {
+		return 0, false, fmt.Errorf("could not start ListRightPushUpsert: %w", err)
+	}
+	//nolint:errcheck
+	defer transaction.Rollback()
+
+	var result writers.ListRightPushUpsertRow
+
+	queries := c.writers.WithTx(transaction)
+
+	for _, value := range values {
+		result, err = queries.ListRightPushUpsert(ctx, &writers.ListRightPushUpsertParams{
+			Name:  name,
+			Value: value,
+		})
+
+		//nolint:errorlint
+		if err, ok := err.(sqlite3.Error); ok && err.Error() == "malformed JSON" {
+			return 0, true, nil
+		}
+
+		if err != nil {
+			return 0, true, fmt.Errorf("could not execute ListRightPushUpsert: %w", err)
+		}
+	}
+
+	err = transaction.Commit()
+	if err != nil {
+		return 0, false, fmt.Errorf("could not ListRightPushUpsert: %w", err)
 	}
 
 	return result.Column2, result.Column1, nil

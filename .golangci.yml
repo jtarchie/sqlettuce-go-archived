@@ -4,12 +4,13 @@ linters:
   enable-all: true
   disable:
   - depguard
+  - dupl
   - execinquery
   - exhaustruct
   - funlen
+  - gochecknoinits
   - gomnd
   - paralleltest
-  - gochecknoinits
 
   # linters deprecated
   - deadcode

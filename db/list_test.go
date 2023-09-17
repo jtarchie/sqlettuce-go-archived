@@ -30,9 +30,9 @@ var _ = Describe("List", func() {
 		})
 
 		It("sets a value a position", func() {
-			_, _, _ = client.ListRightPush(context.Background(), "mylist", "one")
-			_, _, _ = client.ListRightPush(context.Background(), "mylist", "two")
-			_, _, _ = client.ListRightPush(context.Background(), "mylist", "three")
+			_, _, _ = client.ListRightPushUpsert(context.Background(), "mylist", "one")
+			_, _, _ = client.ListRightPushUpsert(context.Background(), "mylist", "two")
+			_, _, _ = client.ListRightPushUpsert(context.Background(), "mylist", "three")
 
 			values, _ := client.ListRange(context.Background(), "mylist", 0, -1)
 			Expect(values).To(Equal([]string{"one", "two", "three"}))
@@ -57,8 +57,8 @@ var _ = Describe("List", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(length).To(BeEquivalentTo(0))
 
-			_, _, _ = client.ListRightPush(context.Background(), "mylist", "Hello")
-			_, _, _ = client.ListRightPush(context.Background(), "mylist", "World")
+			_, _, _ = client.ListRightPushUpsert(context.Background(), "mylist", "Hello")
+			_, _, _ = client.ListRightPushUpsert(context.Background(), "mylist", "World")
 
 			length, err = client.ListLength(context.Background(), "mylist")
 			Expect(err).NotTo(HaveOccurred())
@@ -77,8 +77,8 @@ var _ = Describe("List", func() {
 
 	Describe("ListInsert", func() {
 		It("inserts values at a pivot point", func() {
-			_, _, _ = client.ListRightPush(context.Background(), "mylist", "Hello")
-			_, _, _ = client.ListRightPush(context.Background(), "mylist", "World")
+			_, _, _ = client.ListRightPushUpsert(context.Background(), "mylist", "Hello")
+			_, _, _ = client.ListRightPushUpsert(context.Background(), "mylist", "World")
 
 			index, found, err := client.ListInsert(context.Background(), "mylist", -1, "World", "There")
 			Expect(err).NotTo(HaveOccurred())
@@ -109,9 +109,9 @@ var _ = Describe("List", func() {
 
 	Describe("ListRange", func() {
 		It("handles zero index and negative indices", func() {
-			_, _, _ = client.ListRightPush(context.Background(), "mylist", "one")
-			_, _, _ = client.ListRightPush(context.Background(), "mylist", "two")
-			_, _, _ = client.ListRightPush(context.Background(), "mylist", "three")
+			_, _, _ = client.ListRightPushUpsert(context.Background(), "mylist", "one")
+			_, _, _ = client.ListRightPushUpsert(context.Background(), "mylist", "two")
+			_, _, _ = client.ListRightPushUpsert(context.Background(), "mylist", "three")
 
 			values, err := client.ListRange(context.Background(), "mylist", 0, 0)
 			Expect(err).NotTo(HaveOccurred())
@@ -137,17 +137,74 @@ var _ = Describe("List", func() {
 		})
 	})
 
-	Describe("ListRightPush", func() {
+	Describe("ListRightPushUpsert", func() {
 		It("returns the index of the value pushed", func() {
-			index, found, err := client.ListRightPush(context.Background(), "mylist", "hello")
+			index, found, err := client.ListRightPushUpsert(context.Background(), "mylist", "hello")
 			Expect(index).To(BeEquivalentTo(1))
 			Expect(found).To(BeTrue())
 			Expect(err).ToNot(HaveOccurred())
 
-			index, found, err = client.ListRightPush(context.Background(), "mylist", "world")
+			index, found, err = client.ListRightPushUpsert(context.Background(), "mylist", "world")
 			Expect(index).To(BeEquivalentTo(2))
 			Expect(found).To(BeTrue())
 			Expect(err).ToNot(HaveOccurred())
+
+			values, err := client.ListRange(context.Background(), "mylist", 0, -1)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(values).To(Equal([]string{"hello", "world"}))
+		})
+
+		When("the key already exists of a different type", func() {
+			It("returns found, but does not push", func() {
+				_ = client.Set(context.Background(), "notlist", "string")
+
+				index, found, err := client.ListRightPushUpsert(context.Background(), "notlist", "hello")
+				Expect(index).To(BeEquivalentTo(0))
+				Expect(found).To(BeTrue())
+				Expect(err).ToNot(HaveOccurred())
+			})
+		})
+	})
+
+	Describe("ListRightPush", func() {
+		When("key does not already exist", func() {
+			It("returns the index ", func() {
+				index, err := client.ListRightPush(context.Background(), "mylist", "hello")
+				Expect(index).To(BeEquivalentTo(0))
+				Expect(err).ToNot(HaveOccurred())
+
+				values, err := client.ListRange(context.Background(), "mylist", 0, -1)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(values).To(BeEmpty())
+			})
+		})
+
+		When("key already exist", func() {
+			When("value is a different type", func() {
+				It("returns found, but does not push", func() {
+					_ = client.Set(context.Background(), "notlist", "string")
+
+					index, err := client.ListRightPush(context.Background(), "notlist", "hello")
+					Expect(err).To(HaveOccurred())
+					Expect(index).To(BeEquivalentTo(0))
+				})
+			})
+
+			It("returns the index", func() {
+				index, found, err := client.ListRightPushUpsert(context.Background(), "mylist", "hello")
+				Expect(index).To(BeEquivalentTo(1))
+				Expect(found).To(BeTrue())
+				Expect(err).ToNot(HaveOccurred())
+
+				index, err = client.ListRightPush(context.Background(), "mylist", "hello")
+				Expect(index).To(BeEquivalentTo(2))
+				Expect(found).To(BeTrue())
+				Expect(err).ToNot(HaveOccurred())
+
+				values, err := client.ListRange(context.Background(), "mylist", 0, -1)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(values).To(Equal([]string{"hello", "hello"}))
+			})
 		})
 	})
 })

@@ -39,6 +39,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listRightPushStmt, err = db.PrepareContext(ctx, listRightPush); err != nil {
 		return nil, fmt.Errorf("error preparing query ListRightPush: %w", err)
 	}
+	if q.listRightPushUpsertStmt, err = db.PrepareContext(ctx, listRightPushUpsert); err != nil {
+		return nil, fmt.Errorf("error preparing query ListRightPushUpsert: %w", err)
+	}
 	if q.listSetStmt, err = db.PrepareContext(ctx, listSet); err != nil {
 		return nil, fmt.Errorf("error preparing query ListSet: %w", err)
 	}
@@ -73,6 +76,11 @@ func (q *Queries) Close() error {
 	if q.listRightPushStmt != nil {
 		if cerr := q.listRightPushStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listRightPushStmt: %w", cerr)
+		}
+	}
+	if q.listRightPushUpsertStmt != nil {
+		if cerr := q.listRightPushUpsertStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listRightPushUpsertStmt: %w", cerr)
 		}
 	}
 	if q.listSetStmt != nil {
@@ -122,27 +130,29 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                DBTX
-	tx                *sql.Tx
-	addFloatStmt      *sql.Stmt
-	addIntStmt        *sql.Stmt
-	appendValueStmt   *sql.Stmt
-	flushAllStmt      *sql.Stmt
-	listRightPushStmt *sql.Stmt
-	listSetStmt       *sql.Stmt
-	setStmt           *sql.Stmt
+	db                      DBTX
+	tx                      *sql.Tx
+	addFloatStmt            *sql.Stmt
+	addIntStmt              *sql.Stmt
+	appendValueStmt         *sql.Stmt
+	flushAllStmt            *sql.Stmt
+	listRightPushStmt       *sql.Stmt
+	listRightPushUpsertStmt *sql.Stmt
+	listSetStmt             *sql.Stmt
+	setStmt                 *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                tx,
-		tx:                tx,
-		addFloatStmt:      q.addFloatStmt,
-		addIntStmt:        q.addIntStmt,
-		appendValueStmt:   q.appendValueStmt,
-		flushAllStmt:      q.flushAllStmt,
-		listRightPushStmt: q.listRightPushStmt,
-		listSetStmt:       q.listSetStmt,
-		setStmt:           q.setStmt,
+		db:                      tx,
+		tx:                      tx,
+		addFloatStmt:            q.addFloatStmt,
+		addIntStmt:              q.addIntStmt,
+		appendValueStmt:         q.appendValueStmt,
+		flushAllStmt:            q.flushAllStmt,
+		listRightPushStmt:       q.listRightPushStmt,
+		listRightPushUpsertStmt: q.listRightPushUpsertStmt,
+		listSetStmt:             q.listSetStmt,
+		setStmt:                 q.setStmt,
 	}
 }

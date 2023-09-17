@@ -36,18 +36,39 @@ func rpushRouter(
 	client *db.Client,
 ) router.Router {
 	return router.MinMaxTokensRouter(2, 0, func(tokens []string, conn io.Writer) error {
-		value, found, err := client.ListRightPush(ctx, tokens[1], tokens[2:]...)
+		value, found, err := client.ListRightPushUpsert(ctx, tokens[1], tokens[2:]...)
 		if err != nil {
 			return fmt.Errorf("could not execute RPUSH: %w", err)
 		}
 
 		if !found {
-			_, err = io.WriteString(conn, "-Not an array value\r\n")
+			err = writeError(conn, "Not an array value")
 			if err != nil {
 				return fmt.Errorf("could not send reply: %w", err)
 			}
 
 			return nil
+		}
+
+		err = writeInt(conn, value)
+		if err != nil {
+			return fmt.Errorf("could not write value: %w", err)
+		}
+
+		return nil
+	})
+}
+
+func rpushXRouter(
+	ctx context.Context,
+	client *db.Client,
+) router.Router {
+	return router.MinMaxTokensRouter(2, 0, func(tokens []string, conn io.Writer) error {
+		value, err := client.ListRightPush(ctx, tokens[1], tokens[2:]...)
+		if err != nil {
+			_ = writeError(conn, "WRONGTYPE Operation against a key holding the wrong kind of value")
+
+			return fmt.Errorf("could not execute RPUSHX: %w", err)
 		}
 
 		err = writeInt(conn, value)
@@ -99,7 +120,7 @@ func incrByFloatRouter(
 	return router.MinMaxTokensRouter(2, 0, func(tokens []string, conn io.Writer) error {
 		value, err := strconv.ParseFloat(tokens[2], 64)
 		if err != nil {
-			_, _ = io.WriteString(conn, "-Expected float value to increment\r\n")
+			_ = writeError(conn, "Expected float value to increment")
 
 			return fmt.Errorf("could not parse float: %w", err)
 		}
@@ -125,7 +146,7 @@ func decrByRouter(
 	return router.MinMaxTokensRouter(2, 0, func(tokens []string, conn io.Writer) error {
 		incr, err := strconv.ParseInt(tokens[2], 10, 64)
 		if err != nil {
-			_, _ = io.WriteString(conn, "-Expected integer value to increment\r\n")
+			_ = writeError(conn, "Expected integer value to increment")
 
 			return fmt.Errorf("could not parse integer: %w", err)
 		}
@@ -151,7 +172,7 @@ func incrByRouter(
 	return router.MinMaxTokensRouter(2, 0, func(tokens []string, conn io.Writer) error {
 		incr, err := strconv.ParseInt(tokens[2], 10, 64)
 		if err != nil {
-			_, _ = io.WriteString(conn, "-Expected integer value to increment\r\n")
+			_ = writeError(conn, "Expected integer value to increment")
 
 			return fmt.Errorf("could not parse integer: %w", err)
 		}
@@ -318,7 +339,7 @@ func msetRouter(
 	return router.MinMaxTokensRouter(2, 0, func(tokens []string, conn io.Writer) error {
 		if len(tokens[1:])%2 != 0 {
 			// require even number of tokens for key-value pairs
-			_, _ = io.WriteString(conn, "-Expected key-value pair, not enough tokens\r\n")
+			_ = writeError(conn, "Expected key-value pair, not enough tokens")
 
 			return fmt.Errorf("require even number of tokens: %w", ErrIncorrectTokens)
 		}
