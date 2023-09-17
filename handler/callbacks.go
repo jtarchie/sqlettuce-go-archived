@@ -231,6 +231,39 @@ func decrRouter(
 	})
 }
 
+func lrangeRouter(
+	ctx context.Context,
+	client *db.Client,
+) router.Router {
+	return router.MinMaxTokensRouter(3, 0, func(tokens []string, conn io.Writer) error {
+		start, _ := strconv.ParseInt(tokens[2], 10, 64)
+		end, _ := strconv.ParseInt(tokens[3], 10, 64)
+
+		values, err := client.ListRange(ctx, tokens[1], start, end)
+		if err != nil {
+			_ = writeError(conn, "value is not an array")
+
+			return fmt.Errorf("could not execute LRANGE: %w", err)
+		}
+
+		_, _ = conn.Write([]byte(fmt.Sprintf("*%d\r\n", len(values))))
+
+		for _, value := range values {
+			if value == "" {
+				_, err = io.WriteString(conn, router.NullResponse)
+			} else {
+				err = writeBulkString(conn, value)
+			}
+
+			if err != nil {
+				return fmt.Errorf("could not write value: %w", err)
+			}
+		}
+
+		return nil
+	})
+}
+
 func appendRouter(
 	ctx context.Context,
 	client *db.Client,

@@ -302,10 +302,77 @@ var _ = Describe("CLI", func() {
 		Expect(value).To(BeEquivalentTo(0))
 	})
 
+	It("can send RPUSHX", func() {
+		value, err := client.RPush(context.TODO(), "mylist", "Hello").Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(value).To(BeEquivalentTo(1))
+
+		value, err = client.RPushX(context.TODO(), "mylist", "World").Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(value).To(BeEquivalentTo(2))
+
+		value, err = client.RPushX(context.TODO(), "myotherlist", "World").Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(value).To(BeEquivalentTo(0))
+
+		values, err := client.LRange(context.TODO(), "mylist", 0, -1).Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(values).To(Equal([]string{"Hello", "World"}))
+
+		values, err = client.LRange(context.TODO(), "myotherlist", 0, -1).Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(values).To(BeEmpty())
+	})
+
+	It("can send RPUSH", func() {
+		value, err := client.RPush(context.TODO(), "mylist", "hello").Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(value).To(BeEquivalentTo(1))
+
+		value, err = client.RPushX(context.TODO(), "mylist", "world").Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(value).To(BeEquivalentTo(2))
+
+		values, err := client.LRange(context.TODO(), "mylist", 0, -1).Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(values).To(Equal([]string{"hello", "world"}))
+	})
+
+	It("can send LRANGE", func() {
+		value, err := client.RPush(context.TODO(), "mylist", "one").Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(value).To(BeEquivalentTo(1))
+
+		value, err = client.RPush(context.TODO(), "mylist", "two").Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(value).To(BeEquivalentTo(2))
+
+		value, err = client.RPush(context.TODO(), "mylist", "three").Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(value).To(BeEquivalentTo(3))
+
+		values, err := client.LRange(context.TODO(), "mylist", 0, 0).Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(values).To(Equal([]string{"one"}))
+
+		values, err = client.LRange(context.TODO(), "mylist", -3, 2).Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(values).To(Equal([]string{"one", "two", "three"}))
+
+		values, err = client.LRange(context.TODO(), "mylist", -100, 100).Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(values).To(Equal([]string{"one", "two", "three"}))
+
+		values, err = client.LRange(context.TODO(), "mylist", 5, 10).Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(values).To(BeEmpty())
+
+		values, err = client.LRange(context.TODO(), "nonexisting", 0, 1).Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(values).To(BeEmpty())
+	})
+
 	// It("can start the server", func() {
-	// 	intVal, err = client.RPushX(context.TODO(), "mylist", "two").Result()
-	// 	Expect(err).NotTo(HaveOccurred())
-	// 	Expect(intVal).To(BeEquivalentTo(0))
 
 	// 	intVal, err = client.RPushX(context.TODO(), "mykey", "two").Result()
 	// 	Expect(err).To(HaveOccurred())

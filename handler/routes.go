@@ -34,13 +34,14 @@ func NewRoutes(
 		"INCR":        incrRouter(ctx, client),
 		"INCRBY":      incrByRouter(ctx, client),
 		"INCRBYFLOAT": incrByFloatRouter(ctx, client),
+		"LRANGE":      lrangeRouter(ctx, client),
 		"MGET":        mgetRouter(ctx, client),
 		"MSET":        msetRouter(ctx, client),
 		"PING":        router.StaticResponseRouter("+PONG\r\n"),
-		"SET":         setRouter(ctx, client),
-		"STRLEN":      strlenRouter(ctx, client),
 		"RPUSH":       rpushRouter(ctx, client),
 		"RPUSHX":      rpushXRouter(ctx, client),
+		"SET":         setRouter(ctx, client),
+		"STRLEN":      strlenRouter(ctx, client),
 
 		// deprecated commands, let's not support them
 		"RPOPLPUSH":  router.StaticResponseRouter("-Deprecated command, please use LMOVE with the RIGHT and LEFT"),
