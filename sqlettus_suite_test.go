@@ -143,6 +143,10 @@ var _ = Describe("CLI", func() {
 		intVal, err = client.StrLen(context.TODO(), "nonexisting").Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(intVal).To(BeEquivalentTo(0))
+
+		intVal, err = client.RPush(context.TODO(), "mylist", "one").Result()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(intVal).To(BeEquivalentTo(1))
 	})
 })
 

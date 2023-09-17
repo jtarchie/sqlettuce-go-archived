@@ -39,6 +39,7 @@ func NewRoutes(
 		"PING":        router.StaticResponseRouter("+PONG\r\n"),
 		"SET":         setRouter(ctx, client),
 		"STRLEN":      strlenRouter(ctx, client),
+		"RPUSH":       rpushRouter(ctx, client),
 	}
 
 	commands["FLUSHDB"] = commands["FLUSHALL"]

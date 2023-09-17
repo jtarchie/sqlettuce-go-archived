@@ -97,13 +97,31 @@ func (c *Client) ListLength(ctx context.Context, name string) (int64, error) {
 	return 0, ErrNotFound
 }
 
-func (c *Client) ListRightPush(ctx context.Context, name, value string) (int64, bool, error) {
-	result, err := c.writers.ListRightPush(ctx, &writers.ListRightPushParams{
-		Name:  name,
-		Value: value,
-	})
+func (c *Client) ListRightPush(ctx context.Context, name string, values ...string) (int64, bool, error) {
+	transaction, err := c.db.Begin()
 	if err != nil {
-		return 0, false, fmt.Errorf("could not execute ListSet: %w", err)
+		return 0, false, fmt.Errorf("could not start RPUSH: %w", err)
+	}
+	//nolint:errcheck
+	defer transaction.Rollback()
+
+	var result writers.ListRightPushRow
+
+	queries := c.writers.WithTx(transaction)
+
+	for _, value := range values {
+		result, err = queries.ListRightPush(ctx, &writers.ListRightPushParams{
+			Name:  name,
+			Value: value,
+		})
+		if err != nil {
+			return 0, false, fmt.Errorf("could not execute RPUSH: %w", err)
+		}
+	}
+
+	err = transaction.Commit()
+	if err != nil {
+		return 0, false, fmt.Errorf("could not RPUSH: %w", err)
 	}
 
 	return result.Column2, result.Column1, nil

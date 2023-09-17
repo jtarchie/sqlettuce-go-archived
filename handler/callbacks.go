@@ -31,6 +31,34 @@ func strlenRouter(
 	})
 }
 
+func rpushRouter(
+	ctx context.Context,
+	client *db.Client,
+) router.Router {
+	return router.MinMaxTokensRouter(2, 0, func(tokens []string, conn io.Writer) error {
+		value, found, err := client.ListRightPush(ctx, tokens[1], tokens[2:]...)
+		if err != nil {
+			return fmt.Errorf("could not execute RPUSH: %w", err)
+		}
+
+		if !found {
+			_, err = io.WriteString(conn, "-Not an array value\r\n")
+			if err != nil {
+				return fmt.Errorf("could not send reply: %w", err)
+			}
+
+			return nil
+		}
+
+		err = writeInt(conn, value)
+		if err != nil {
+			return fmt.Errorf("could not write value: %w", err)
+		}
+
+		return nil
+	})
+}
+
 func echoRouter() router.Router {
 	return router.MinMaxTokensRouter(1, 0, func(tokens []string, conn io.Writer) error {
 		err := writeBulkString(conn, tokens[1])
