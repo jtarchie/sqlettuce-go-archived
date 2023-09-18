@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/jtarchie/sqlettus/db/drivers/sqlite"
+	"github.com/jtarchie/sqlettuce/db/drivers/sqlite"
 )
 
 type Client struct {

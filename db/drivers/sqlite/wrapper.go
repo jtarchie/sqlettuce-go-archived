@@ -4,9 +4,9 @@ package sqlite
 import (
 	"database/sql"
 
-	"github.com/jtarchie/sqlettus/db/drivers/sqlite/batch"
-	"github.com/jtarchie/sqlettus/db/drivers/sqlite/readers"
-	"github.com/jtarchie/sqlettus/db/drivers/sqlite/writers"
+	"github.com/jtarchie/sqlettuce/db/drivers/sqlite/batch"
+	"github.com/jtarchie/sqlettuce/db/drivers/sqlite/readers"
+	"github.com/jtarchie/sqlettuce/db/drivers/sqlite/writers"
 )
 
 // Done to wrap the WithTX function

@@ -9,8 +9,8 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/jtarchie/sqlettus/db"
-	"github.com/jtarchie/sqlettus/tcp"
+	"github.com/jtarchie/sqlettuce/db"
+	"github.com/jtarchie/sqlettuce/tcp"
 )
 
 type Handler struct {

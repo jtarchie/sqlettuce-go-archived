@@ -3,7 +3,7 @@ package db_test
 import (
 	"context"
 
-	"github.com/jtarchie/sqlettus/db"
+	"github.com/jtarchie/sqlettuce/db"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

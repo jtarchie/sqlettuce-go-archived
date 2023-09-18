@@ -1,4 +1,4 @@
-module github.com/jtarchie/sqlettus
+module github.com/jtarchie/sqlettuce
 
 go 1.21.0
 

@@ -9,9 +9,9 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
-	"github.com/jtarchie/sqlettus/db/drivers/sqlite/batch"
-	"github.com/jtarchie/sqlettus/db/drivers/sqlite/readers"
-	"github.com/jtarchie/sqlettus/db/drivers/sqlite/writers"
+	"github.com/jtarchie/sqlettuce/db/drivers/sqlite/batch"
+	"github.com/jtarchie/sqlettuce/db/drivers/sqlite/readers"
+	"github.com/jtarchie/sqlettuce/db/drivers/sqlite/writers"
 )
 
 //go:embed migrations/*.sql

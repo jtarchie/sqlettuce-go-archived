@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/jtarchie/sqlettus/db/drivers/sqlite/writers"
+	"github.com/jtarchie/sqlettuce/db/drivers/sqlite/writers"
 )
 
 func (c *Client) AddFloat(ctx context.Context, name string, value float64) (float64, error) {

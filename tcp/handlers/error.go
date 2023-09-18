@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/jtarchie/sqlettus/tcp"
+	"github.com/jtarchie/sqlettuce/tcp"
 )
 
 type Error struct{}

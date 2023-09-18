@@ -3,8 +3,8 @@ package handler
 import (
 	"context"
 
-	"github.com/jtarchie/sqlettus/db"
-	"github.com/jtarchie/sqlettus/router"
+	"github.com/jtarchie/sqlettuce/db"
+	"github.com/jtarchie/sqlettuce/router"
 )
 
 //nolint:funlen

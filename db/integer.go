@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/jtarchie/sqlettus/db/drivers/sqlite/writers"
+	"github.com/jtarchie/sqlettuce/db/drivers/sqlite/writers"
 )
 
 func (c *Client) AddInt(ctx context.Context, name string, value int64) (int64, error) {

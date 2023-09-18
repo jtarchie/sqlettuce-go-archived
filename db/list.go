@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jtarchie/sqlettus/db/drivers/sqlite/writers"
+	"github.com/jtarchie/sqlettuce/db/drivers/sqlite/writers"
 	sqlite3 "github.com/mattn/go-sqlite3"
 )
 

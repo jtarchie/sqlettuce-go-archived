@@ -1,9 +1,9 @@
-project_name: sqlettus
+project_name: sqlettuce
 
 release:
   github:
     owner: jtarchie
-    name: sqlettus
+    name: sqlettuce
 
 builds:
 - env:
@@ -51,11 +51,11 @@ archives:
 brews:
 - tap:
     owner: jtarchie
-    name: sqlettus
+    name: sqlettuce
   test: |
-    system "#{bin}/sqlettus --help"
+    system "#{bin}/sqlettuce --help"
   install:
-    bin.install "sqlettus"
+    bin.install "sqlettuce"
 checksum:
   name_template: 'checksums.txt'
 changelog:

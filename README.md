@@ -1,4 +1,4 @@
-# Sqlettus
+# Sqlettuce
 
 **Redis-like** service with SQLite as a backend. A playful fusion of SQLite and
 Redis offers in-memory data structure store capabilities with the persistent
@@ -27,8 +27,8 @@ code.
 ## Installation
 
 ```bash
-git clone https://github.com/jtarchie/sqlettus.git
-cd sqlettus
+git clone https://github.com/jtarchie/sqlettuce.git
+cd sqlettuce
 brew bundle
 task
 ```
@@ -38,7 +38,7 @@ task
 After building, you can run the executable:
 
 ```bash
-./sqlettus
+./sqlettuce
 ```
 
 ## Contributing

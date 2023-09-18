@@ -13,9 +13,9 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func TestSqlettus(t *testing.T) {
+func TestSqlettuce(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Sqlettus Suite")
+	RunSpecs(t, "Sqlettuce Suite")
 }
 
 var _ = Describe("CLI", func() {

@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/jtarchie/sqlettus/db/drivers/sqlite/readers"
-	"github.com/jtarchie/sqlettus/db/drivers/sqlite/writers"
+	"github.com/jtarchie/sqlettuce/db/drivers/sqlite/readers"
+	"github.com/jtarchie/sqlettuce/db/drivers/sqlite/writers"
 )
 
 func (c *Client) Set(ctx context.Context, name, value string) error {

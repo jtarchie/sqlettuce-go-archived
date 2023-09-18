@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/jtarchie/sqlettus/router"
+	"github.com/jtarchie/sqlettuce/router"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

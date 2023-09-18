@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/jtarchie/sqlettus/tcp"
-	"github.com/jtarchie/sqlettus/tcp/handlers"
+	"github.com/jtarchie/sqlettuce/tcp"
+	"github.com/jtarchie/sqlettuce/tcp/handlers"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/phayes/freeport"
